@@ -8,6 +8,7 @@ import (
 	"strconv"
 )
 
+// Ad represents a single advertisement with targeting and tracking fields
 type Ad struct {
 	ID    int    `json:"id"`
 	Title string `json:"title"`
@@ -18,6 +19,7 @@ type Ad struct {
 	Active bool `json:"active"`
 }
 
+// loadAds reads ads from ads.json and returns them as a slice of Ad
 func loadAds() ([]Ad, error) {
 	data, err := os.ReadFile("ads.json")
 	if err != nil {
@@ -31,6 +33,7 @@ func loadAds() ([]Ad, error) {
 	return ads, nil
 }
 
+// selectedAds finds an active ad matching page and device and returns it with its index
 func selectedAds(ads []Ad, page string, device string) (Ad, int, error) {
 	for i, ad := range ads {
 		if ad.Page == page && ad.Device == device && ad.Active {
@@ -40,6 +43,8 @@ func selectedAds(ads []Ad, page string, device string) (Ad, int, error) {
 	return Ad{}, -1, fmt.Errorf("ad not found for page: %s and device: %s", page, device)
 }
 
+// getAd handles HTTP requests to fetch an ad based on page and device parameters
+// It also increments the view counter and saves the updated data
 func getAd(w http.ResponseWriter, r *http.Request) {
 	device:= r.URL.Query().Get("device")
 	page := r.URL.Query().Get("page")
@@ -72,6 +77,7 @@ func getAd(w http.ResponseWriter, r *http.Request) {
 	
 }
 
+// saveAds writes the updated ads slice back to ads.json
 func saveAds(ads []Ad) error {
 	data, err := json.Marshal(ads)
 	if err != nil {
@@ -80,6 +86,7 @@ func saveAds(ads []Ad) error {
 	return os.WriteFile("ads.json", data, 0644)
 }
 
+// turnActivatorAd activates an ad by ID if it is currently inactive
 func turnActivatorAd (ads[] Ad, id int) (int,error) {
 		
 		for i, ad := range ads {
@@ -96,6 +103,7 @@ func turnActivatorAd (ads[] Ad, id int) (int,error) {
 return -1, fmt.Errorf("ad with id %d not found or already active", id)
 }
 
+// activateAd handles HTTP requests to activate an ad by its ID
 func activateAd(w http.ResponseWriter, r *http.Request) {
 	id:= r.URL.Query().Get("id")
 
