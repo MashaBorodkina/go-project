@@ -79,7 +79,7 @@ func getAd(w http.ResponseWriter, r *http.Request) {
 
 // saveAds writes the updated ads slice back to ads.json
 func saveAds(ads []Ad) error {
-	data, err := json.Marshal(ads)
+	data, err := json.MarshalIndent(ads, "", "  ")
 	if err != nil {
 		return fmt.Errorf("error marshaling JSON: %w", err)
 	}
@@ -87,20 +87,24 @@ func saveAds(ads []Ad) error {
 }
 
 // turnActivatorAd activates an ad by ID if it is currently inactive
-func turnActivatorAd (ads[] Ad, id int) (int,error) {
+func turnActivatorAd (ads[] Ad, id int) (int, bool, error) {
 		
 		for i, ad := range ads {
-		if ad.ID == id && !ad.Active {
-			ads[i].Active = true
-			
-			err:= saveAds(ads)
+		if ad.ID == id {
+			if !ad.Active {
+			ads[i].Active = true		
+			 
+			} else {
+				ads[i].Active = false
+				}
+		err:= saveAds(ads)
 			if err != nil {
-				return -1, fmt.Errorf("error saving ads: %w", err)
-		}
-		return i, nil
+				return -1, ads[i].Active, fmt.Errorf("error saving ads: %w", err)
+				}
+		return i, ads[i].Active, nil
 	}
 }
-return -1, fmt.Errorf("ad with id %d not found or already active", id)
+return -1, false, fmt.Errorf("ad with id %d not found or already active", id)
 }
 
 // activateAd handles HTTP requests to activate an ad by its ID
@@ -124,12 +128,22 @@ func activateAd(w http.ResponseWriter, r *http.Request) {
 		return
 		}
 
-	_, err = turnActivatorAd(ads, idInt)
+	_, isActive, err := turnActivatorAd(ads, idInt)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	w.WriteHeader(http.StatusOK)	
+
+	response:= ""
+	if isActive==true {
+		response = "activated"		
+	} else {
+		response = "deactivated"	
+	}
+	
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"message": fmt.Sprintf("Ad with id %d %s successfully", idInt, response)})
 }
 
 	
