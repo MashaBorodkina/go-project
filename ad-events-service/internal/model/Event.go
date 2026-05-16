@@ -12,5 +12,5 @@ type Event struct {
 	Type      string    `json:"type"` // e.g., "impression", "click"
 	Ip 	   string    `json:"ip"`
 	User_Agent string    `json:"user_agent"`
-	Timestamp time.Time `json:"timestamp"`
+	CreatedAt time.Time `json:"timestamp"`
 }
