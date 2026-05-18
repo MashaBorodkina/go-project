@@ -78,11 +78,3 @@ func (r *BannerRepository) DeleteBanner(ctx context.Context, id string) error {
 	return nil
 }
 
-func (r *BannerRepository) UpdateBannerPartial (ctx context.Context, banner *model.Banner) error {
-	query := "UPDATE banners SET campaign_id = COALESCE($1, campaign_id), title = COALESCE($2, title), image_url = COALESCE($3, image_url), is_active = COALESCE($4, is_active), updated_at = NOW() WHERE id = $5"
-	_, err := r.db.Exec(ctx, query, banner.CampaignID, banner.Title, banner.ImageUrl, banner.IsActive, banner.ID)
-	if err != nil {
-		return fmt.Errorf("failed to update banner: %w", err)
-	}
-	return nil	
-}
