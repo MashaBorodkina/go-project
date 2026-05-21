@@ -1,10 +1,13 @@
 package service
 
 import (
+	"ad-events-service/internal/dto"
 	"ad-events-service/internal/model"
 	"ad-events-service/internal/repository"
 	"context"
 	"fmt"
+
+	"github.com/google/uuid"
 )
 
 type BannerService struct {
@@ -39,15 +42,13 @@ func (s *BannerService) GetAllBanners(ctx context.Context) ([]*model.Banner, err
 
 func ValidateBanner(ban *model.Banner) error {
 	switch {
-	case ban.Title == "":
-		return fmt.Errorf("banner title cannot be empty")
-	case len(ban.Title) > 100 || len(ban.Title) < 1:
-		return fmt.Errorf("banner title must be between 1 and 100 characters")
+	case len(ban.Title) > 200 || len(ban.Title) < 1:
+		return fmt.Errorf("banner title must be between 1 and 200 characters")
 	case ban.ImageUrl == "":
 		return fmt.Errorf("banner image URL cannot be empty")
-	case len(ban.ImageUrl) > 255:
-		return fmt.Errorf("banner image URL must be less than 255 characters")
-	case ban.CampaignID == "":
+	case len(ban.ImageUrl) > 500 || len(ban.ImageUrl) < 1:
+		return fmt.Errorf("banner image URL must be between 1 and 500 characters")
+	case ban.CampaignID == uuid.Nil:
 		return fmt.Errorf("banner campaign ID cannot be empty")
 	}
 	return nil
@@ -70,5 +71,46 @@ func (s *BannerService) UpdateBanner(ctx context.Context, banner *model.Banner) 
 	if err := s.BanRepo.UpdateBanner(ctx, banner); err != nil {
 		return fmt.Errorf("failed to update banner: %w", err)
 	}	
+	return nil
+}
+
+func (s* BannerService) PatchBanner(ctx context.Context, banID string, req *dto.BannerPatchRequest) (*model.Banner, error) {
+	switch {
+	case banID == "":
+		return nil, fmt.Errorf("banner ID cannot be empty")
+	case req == nil:
+		return nil, fmt.Errorf("patch request cannot be nil")
+	case req.Title != nil && (len(*req.Title) > 200 || len(*req.Title) < 1):
+		return nil, fmt.Errorf("banner title must be between 1 and 200 characters")
+	case req.ImageUrl != nil && (len(*req.ImageUrl) > 500 || len(*req.ImageUrl) < 1):
+		return nil, fmt.Errorf("banner image URL must be between 1 and 500 characters")	
+	}
+
+	banner, err := s.BanRepo.GetBannerByID(ctx, banID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get banner by ID: %w", err)
+	}
+	if req.Title != nil {
+		banner.Title = *req.Title
+	}
+	if req.ImageUrl != nil {
+		banner.ImageUrl = *req.ImageUrl
+	}
+	if req.IsActive != nil {
+		banner.IsActive = *req.IsActive
+	}
+	if err := s.BanRepo.UpdateBanner(ctx, banner); err != nil {
+		return nil, fmt.Errorf("failed to update banner: %w", err)
+	}
+	return banner, nil	
+}
+
+func (s *BannerService) DeleteBanner(ctx context.Context, banID string) error {
+	if banID == "" {
+		return fmt.Errorf("banner ID cannot be empty")
+	}
+	if err := s.BanRepo.DeleteBanner(ctx, banID); err != nil {
+		return fmt.Errorf("failed to delete banner: %w", err)
+	}
 	return nil
 }
