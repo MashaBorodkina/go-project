@@ -61,8 +61,8 @@ func (r *BannerRepository) CreateBanner(ctx context.Context, banner *model.Banne
 }
 
 func (r *BannerRepository) UpdateBanner (ctx context.Context, banner *model.Banner) error {
-	quey := "UPDATE banners SET campaign_id = $1, title = $2, image_url = $3, is_active = $4, updated_at = NOW() WHERE id = $5"
-	_, err := r.db.Exec(ctx, quey, banner.CampaignID, banner.Title, banner.ImageUrl, banner.IsActive, banner.ID)
+	query := "UPDATE banners SET campaign_id = $1, title = $2, image_url = $3, is_active = $4, updated_at = NOW() WHERE id = $5"
+	_, err := r.db.Exec(ctx, query, banner.CampaignID, banner.Title, banner.ImageUrl, banner.IsActive, banner.ID)
 	if err != nil {
 		return fmt.Errorf("failed to update banner: %w", err)
 	}
@@ -76,5 +76,31 @@ func (r *BannerRepository) DeleteBanner(ctx context.Context, id string) error {
 		return fmt.Errorf("failed to delete banner: %w", err)
 	}
 	return nil
+}
+
+func (r *BannerRepository) GetBannersByCampaignId(ctx context.Context, id string) ([]*model.Banner, error) {
+	query := `Select id, title, image_url, is_active FROM banners Where campaign_id = $1`
+	rows, err := r.db.Query(ctx, query, id)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get banners: %w", err)
+	}
+	defer rows.Close()
+
+	var banners []*model.Banner
+	for rows.Next() {
+		var banner model.Banner
+		err := rows.Scan(&banner.ID, &banner.Title, &banner.ImageUrl, &banner.IsActive)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan banner: %w", err)
+		}
+		banners = append(banners, &banner)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error occurred while iterating over banners: %w", err)
+	}
+
+	return banners, nil
 }
 
