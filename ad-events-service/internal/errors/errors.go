@@ -8,4 +8,5 @@ var (
 	ErrBannerInactive =errors.New("banner is inactive")
 	ErrCampaignInactive =errors.New("campaign is paused or archived")
 	ErrInvalidEventType =errors.New("invalid event type")
+	ErrEventNotFound =errors.New("event not found")
 )
