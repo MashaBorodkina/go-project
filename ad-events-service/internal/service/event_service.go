@@ -10,16 +10,15 @@ import (
 
 type EventService struct {
 	EventRepo *repository.EventRepository
-	BanRepo *repository.BannerRepository
-	CampRepo *repository.Repository
+	BanRepo   *repository.BannerRepository
+	CampRepo  *repository.Repository
 }
 
 func NewEventService(eventRepo *repository.EventRepository, campRepo *repository.Repository, banRepo *repository.BannerRepository) *EventService {
 	return &EventService{
 		EventRepo: eventRepo,
-		CampRepo: campRepo,
-		BanRepo: banRepo,
-
+		CampRepo:  campRepo,
+		BanRepo:   banRepo,
 	}
 }
 
@@ -29,20 +28,20 @@ func (s *EventService) TrackEvent(ctx context.Context, ban_id string, eventType 
 	}
 	ban, err := s.BanRepo.GetBannerByID(ctx, ban_id)
 
-	if err !=nil {
+	if err != nil {
 		return fmt.Errorf("failed to get banner by ID: %w", err)
 	}
 
 	if ban == nil {
 		return errors.ErrBannerNotFound
 	}
-	if ! ban.IsActive {
+	if !ban.IsActive {
 		return errors.ErrBannerInactive
 	}
 
 	camp, err := s.CampRepo.GetCampaignByID(ctx, ban.CampaignID.String())
 
-	if err !=nil {
+	if err != nil {
 		return fmt.Errorf("failed to get campaign by banner ID: %w", err)
 	}
 
@@ -59,9 +58,9 @@ func (s *EventService) TrackEvent(ctx context.Context, ban_id string, eventType 
 	}
 
 	event := &model.Event{
-		Banner_ID: ban.ID,
-		Type: eventType,
-		Ip: ip,
+		Banner_ID:  ban.ID,
+		Type:       eventType,
+		Ip:         ip,
 		User_Agent: userAgent,
 	}
 	if err := s.EventRepo.CreateEvent(ctx, event); err != nil {
@@ -71,7 +70,7 @@ func (s *EventService) TrackEvent(ctx context.Context, ban_id string, eventType 
 }
 
 func (s *EventService) TrackImpression(ctx context.Context, ban_id string, ip string, userAgent string) error {
-	return s.TrackEvent(ctx, ban_id, "impression", ip, userAgent)	
+	return s.TrackEvent(ctx, ban_id, "impression", ip, userAgent)
 }
 
 func (s *EventService) TrackClick(ctx context.Context, ban_id string, ip string, userAgent string) error {
@@ -79,7 +78,7 @@ func (s *EventService) TrackClick(ctx context.Context, ban_id string, ip string,
 }
 
 func (s *EventService) GetEventByID(ctx context.Context, ID string) (*model.Event, error) {
-	
+
 	if ID == "" {
 		return nil, fmt.Errorf("event ID cannot be empty")
 	}

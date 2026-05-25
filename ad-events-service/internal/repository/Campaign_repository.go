@@ -23,10 +23,10 @@ func (r *Repository) GetCampaignByID(ctx context.Context, id string) (*model.Cam
 	if err != nil {
 		return nil, fmt.Errorf("failed to get campaign by ID: %w", err)
 	}
-	return &campaign, nil	
+	return &campaign, nil
 }
 
-func (r *Repository) GetAllCampaigns(ctx context.Context) ([] *model.Campaign, error) {
+func (r *Repository) GetAllCampaigns(ctx context.Context) ([]*model.Campaign, error) {
 	query := "SELECT id, name, budget, status, created_at, updated_at FROM campaigns"
 	rows, err := r.db.Query(ctx, query)
 	if err != nil {
@@ -34,7 +34,7 @@ func (r *Repository) GetAllCampaigns(ctx context.Context) ([] *model.Campaign, e
 	}
 	defer rows.Close()
 
-	var campaigns [] *model.Campaign
+	var campaigns []*model.Campaign
 	for rows.Next() {
 		var campaign model.Campaign
 		err := rows.Scan(&campaign.ID, &campaign.Name, &campaign.Budget, &campaign.Status, &campaign.CreatedAt, &campaign.UpdatedAt)
@@ -58,7 +58,7 @@ func (r *Repository) CreateCampaign(ctx context.Context, campaign *model.Campaig
 
 func (r *Repository) UpdateCampaign(ctx context.Context, campaign *model.Campaign) error {
 	query := "UPDATE campaigns SET name = $1, budget = $2, status = $3, updated_at = NOW() WHERE id = $4"
-	_, err := r.db.Exec(ctx, query, campaign.Name, campaign.Budget, campaign.Status, campaign.ID)		
+	_, err := r.db.Exec(ctx, query, campaign.Name, campaign.Budget, campaign.Status, campaign.ID)
 	if err != nil {
 		return fmt.Errorf("failed to update campaign: %w", err)
 	}

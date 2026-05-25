@@ -12,7 +12,7 @@ import (
 )
 
 type StatsRepository struct {
-	db *pgxpool.Pool	
+	db *pgxpool.Pool
 }
 
 func NewStatsRepository(db *pgxpool.Pool) *StatsRepository {
@@ -78,21 +78,21 @@ func (r *StatsRepository) GetCampaignStatsByID(ctx context.Context, campaignID s
 	found := false
 
 	for rows.Next() {
-		found = true	
+		found = true
 		var eventType string
-		var count int	
+		var count int
 		if err := rows.Scan(&stats.CampaignID, &stats.CampaignName, &eventType, &count, &stats.Budget); err != nil {
 			return nil, fmt.Errorf("failed to scan campaign stats: %w", err)
 		}
 		switch eventType {
-		case "impression":			
-			stats.Impressions = count		
-			
-		case "click":			
-			stats.Clicks = count			
+		case "impression":
+			stats.Impressions = count
+
+		case "click":
+			stats.Clicks = count
 		}
 	}
-	
+
 	if err := rows.Err(); err != nil {
 		return nil, fmt.Errorf("error occurred while iterating over rows: %w", err)
 	}
@@ -116,7 +116,7 @@ func (r *StatsRepository) GetDailyStats(ctx context.Context, campaignID string) 
 		return nil, fmt.Errorf("failed to get daily stats: %w", err)
 	}
 	defer rows.Close()
-	
+
 	statsMap := make(map[string]*model.DailyStats)
 
 	for rows.Next() {
@@ -130,7 +130,7 @@ func (r *StatsRepository) GetDailyStats(ctx context.Context, campaignID string) 
 		dateKey := date.Format("2006-01-02")
 
 		if statsMap[dateKey] == nil {
-			statsMap[dateKey] = &model.DailyStats{Date: date,}
+			statsMap[dateKey] = &model.DailyStats{Date: date}
 		}
 		switch eventType {
 		case "impression":
@@ -138,12 +138,12 @@ func (r *StatsRepository) GetDailyStats(ctx context.Context, campaignID string) 
 		case "click":
 			statsMap[dateKey].Clicks = count
 		}
-		
+
 	}
 
 	if err := rows.Err(); err != nil {
 		return nil, fmt.Errorf("error occurred while iterating over rows: %w", err)
-	}	
+	}
 	var stats []*model.DailyStats
 	for _, stat := range statsMap {
 		stats = append(stats, stat)

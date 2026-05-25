@@ -4,6 +4,9 @@ export
 
 MIGRATIONS_PATH = migrations
 
+fmt:
+	go fmt ./...
+
 run:
 	go run ./cmd/server
 

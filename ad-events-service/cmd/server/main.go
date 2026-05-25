@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	err:= godotenv.Load()
+	err := godotenv.Load()
 	if err != nil {
 		log.Fatalf("Error loading .env file: %v", err)
 	}
@@ -28,6 +28,6 @@ func main() {
 	err = pool.Ping(context.Background())
 	if err != nil {
 		log.Fatalf("Unable to ping database: %v", err)
-	}	
+	}
 	fmt.Println("Successfully connected to the database!")
 }

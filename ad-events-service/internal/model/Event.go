@@ -7,10 +7,10 @@ import (
 )
 
 type Event struct {
-	ID        uuid.UUID       `json:"id"`
-	Banner_ID      uuid.UUID       `json:"banner_id"`
-	Type      string    `json:"type"` // e.g., "impression", "click"
-	Ip 	   string    `json:"ip"`
+	ID         uuid.UUID `json:"id"`
+	Banner_ID  uuid.UUID `json:"banner_id"`
+	Type       string    `json:"type"` // e.g., "impression", "click"
+	Ip         string    `json:"ip"`
 	User_Agent string    `json:"user_agent"`
-	CreatedAt time.Time `json:"timestamp"`
+	CreatedAt  time.Time `json:"timestamp"`
 }

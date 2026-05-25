@@ -18,7 +18,7 @@ func NewEventRepository(db *pgxpool.Pool) *EventRepository {
 
 func (r *EventRepository) CreateEvent(ctx context.Context, event *model.Event) error {
 	query := "INSERT INTO events (banner_id, type, user_agent, ip) VALUES ($1, $2, $3, $4) RETURNING id"
-	err := r.db.QueryRow(ctx, query,  event.Banner_ID, event.Type, event.User_Agent, event.Ip).Scan(&event.ID)
+	err := r.db.QueryRow(ctx, query, event.Banner_ID, event.Type, event.User_Agent, event.Ip).Scan(&event.ID)
 	if err != nil {
 		return fmt.Errorf("failed to create event: %w", err)
 	}
@@ -32,7 +32,7 @@ func (r *EventRepository) GetEventByID(ctx context.Context, ID string) (*model.E
 	if err != nil {
 		return nil, fmt.Errorf("failed to get event by ID: %w", err)
 	}
-	return &event, nil	
+	return &event, nil
 }
 
 func (r *EventRepository) GetAllEvents(ctx context.Context) ([]*model.Event, error) {
@@ -56,7 +56,3 @@ func (r *EventRepository) GetAllEvents(ctx context.Context) ([]*model.Event, err
 	}
 	return events, nil
 }
-
-
-
-

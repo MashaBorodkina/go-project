@@ -22,7 +22,7 @@ func (s *CampaignService) GetCampaignByID(ctx context.Context, campID string) (*
 	if campID == "" {
 		return nil, fmt.Errorf("campaign ID cannot be empty")
 	}
-	
+
 	camp, err := s.campRepo.GetCampaignByID(ctx, campID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get campaign by ID: %w", err)
@@ -38,7 +38,7 @@ func (s *CampaignService) GetAllCampaigns(ctx context.Context) ([]*model.Campaig
 	camps, err := s.campRepo.GetAllCampaigns(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get all campaigns: %w", err)
-	}	
+	}
 	return camps, nil
 }
 

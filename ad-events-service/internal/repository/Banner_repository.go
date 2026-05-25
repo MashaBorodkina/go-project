@@ -53,25 +53,25 @@ func (r *BannerRepository) GetAllBanners(ctx context.Context) ([]*model.Banner, 
 
 func (r *BannerRepository) CreateBanner(ctx context.Context, banner *model.Banner) error {
 	query := "INSERT INTO banners (campaign_id, title, image_url) VALUES ($1, $2, $3, $4) RETURNING id"
-	err := r.db.QueryRow(ctx, query, banner.CampaignID, banner.Title, banner.ImageUrl, banner.IsActive).Scan(&banner.ID)	
+	err := r.db.QueryRow(ctx, query, banner.CampaignID, banner.Title, banner.ImageUrl, banner.IsActive).Scan(&banner.ID)
 	if err != nil {
 		return fmt.Errorf("failed to create banner: %w", err)
 	}
 	return nil
 }
 
-func (r *BannerRepository) UpdateBanner (ctx context.Context, banner *model.Banner) error {
+func (r *BannerRepository) UpdateBanner(ctx context.Context, banner *model.Banner) error {
 	query := "UPDATE banners SET campaign_id = $1, title = $2, image_url = $3, is_active = $4, updated_at = NOW() WHERE id = $5"
 	_, err := r.db.Exec(ctx, query, banner.CampaignID, banner.Title, banner.ImageUrl, banner.IsActive, banner.ID)
 	if err != nil {
 		return fmt.Errorf("failed to update banner: %w", err)
 	}
-	return nil	
+	return nil
 }
 
 func (r *BannerRepository) DeleteBanner(ctx context.Context, id string) error {
 	query := "DELETE FROM banners WHERE id = $1"
-	_, err := r.db.Exec(ctx, query, id)		
+	_, err := r.db.Exec(ctx, query, id)
 	if err != nil {
 		return fmt.Errorf("failed to delete banner: %w", err)
 	}
@@ -103,4 +103,3 @@ func (r *BannerRepository) GetBannersByCampaignId(ctx context.Context, id string
 
 	return banners, nil
 }
-

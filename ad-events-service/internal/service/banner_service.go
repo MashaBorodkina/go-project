@@ -64,17 +64,17 @@ func (s *BannerService) CreateBanner(ctx context.Context, ban *model.Banner) err
 	return nil
 }
 
-func (s *BannerService) UpdateBanner(ctx context.Context, banner *model.Banner) error{
+func (s *BannerService) UpdateBanner(ctx context.Context, banner *model.Banner) error {
 	if err := ValidateBanner(banner); err != nil {
 		return fmt.Errorf("banner validation failed: %w", err)
 	}
 	if err := s.BanRepo.UpdateBanner(ctx, banner); err != nil {
 		return fmt.Errorf("failed to update banner: %w", err)
-	}	
+	}
 	return nil
 }
 
-func (s* BannerService) PatchBanner(ctx context.Context, banID string, req *dto.BannerPatchRequest) (*model.Banner, error) {
+func (s *BannerService) PatchBanner(ctx context.Context, banID string, req *dto.BannerPatchRequest) (*model.Banner, error) {
 	switch {
 	case banID == "":
 		return nil, fmt.Errorf("banner ID cannot be empty")
@@ -83,7 +83,7 @@ func (s* BannerService) PatchBanner(ctx context.Context, banID string, req *dto.
 	case req.Title != nil && (len(*req.Title) > 200 || len(*req.Title) < 1):
 		return nil, fmt.Errorf("banner title must be between 1 and 200 characters")
 	case req.ImageUrl != nil && (len(*req.ImageUrl) > 500 || len(*req.ImageUrl) < 1):
-		return nil, fmt.Errorf("banner image URL must be between 1 and 500 characters")	
+		return nil, fmt.Errorf("banner image URL must be between 1 and 500 characters")
 	}
 
 	banner, err := s.BanRepo.GetBannerByID(ctx, banID)
@@ -102,7 +102,7 @@ func (s* BannerService) PatchBanner(ctx context.Context, banID string, req *dto.
 	if err := s.BanRepo.UpdateBanner(ctx, banner); err != nil {
 		return nil, fmt.Errorf("failed to update banner: %w", err)
 	}
-	return banner, nil	
+	return banner, nil
 }
 
 func (s *BannerService) DeleteBanner(ctx context.Context, banID string) error {
