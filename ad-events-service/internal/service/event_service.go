@@ -1,7 +1,7 @@
 package service
 
 import (
-	"ad-events-service/internal/errors"
+	"ad-events-service/internal/apperrors"
 	"ad-events-service/internal/model"
 	"ad-events-service/internal/repository"
 	"context"
@@ -33,10 +33,10 @@ func (s *EventService) TrackEvent(ctx context.Context, ban_id string, eventType 
 	}
 
 	if ban == nil {
-		return errors.ErrBannerNotFound
+		return apperrors.ErrBannerInactive
 	}
 	if !ban.IsActive {
-		return errors.ErrBannerInactive
+		return apperrors.ErrBannerInactive
 	}
 
 	camp, err := s.CampRepo.GetCampaignByID(ctx, ban.CampaignID.String())
@@ -46,15 +46,15 @@ func (s *EventService) TrackEvent(ctx context.Context, ban_id string, eventType 
 	}
 
 	if camp == nil {
-		return errors.ErrCampaignNotFound
+		return apperrors.ErrCampaignNotFound
 	}
 
 	if camp.Status != "active" {
-		return errors.ErrCampaignInactive
+		return apperrors.ErrCampaignInactive
 	}
 
 	if eventType != "impression" && eventType != "click" {
-		return errors.ErrInvalidEventType
+		return apperrors.ErrInvalidEventType
 	}
 
 	event := &model.Event{
@@ -87,7 +87,7 @@ func (s *EventService) GetEventByID(ctx context.Context, ID string) (*model.Even
 		return nil, fmt.Errorf("failed to get event by ID: %w", err)
 	}
 	if event == nil {
-		return nil, errors.ErrEventNotFound
+		return nil, apperrors.ErrEventNotFound
 	}
 	return event, nil
 }
