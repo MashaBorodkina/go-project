@@ -42,18 +42,49 @@ func (s *CampaignService) GetAllCampaigns(ctx context.Context) ([]*model.Campaig
 	return camps, nil
 }
 
-func ValidateCampaign(camp *model.Campaign) error {
-	switch {
-	case camp.Name == "":
+func ValidateBase(camp *model.Campaign) error {
+	if camp == nil {
+		return fmt.Errorf("campaign cannot be nil")
+	}
+	if camp.Name == "" {
 		return fmt.Errorf("campaign name cannot be empty")
-	case len(camp.Name) > 100 || len(camp.Name) < 1:
+	}
+	if len(camp.Name) > 100 || len(camp.Name) < 1 {
 		return fmt.Errorf("campaign name must be between 1 and 100 characters")
-	case camp.Budget <= 0:
+	}
+	if camp.Budget <= 0 {
 		return fmt.Errorf("campaign budget must be a positive number")
-	case isValidStatus(camp.Status):
+	}
+	return nil
+}
+
+func ValidateCampaignCreate(camp *model.Campaign) error {
+	if err := ValidateBase(camp); err != nil {
+		return err
+	}
+
+	if camp.ID != uuid.Nil {
+		return fmt.Errorf("campaign ID must be empty for creation")
+	}
+
+	if camp.Status != "" && !isValidStatus(camp.Status) {
 		return fmt.Errorf("invalid campaign status: %s", camp.Status)
-	case camp.ID == uuid.Nil:
-		return fmt.Errorf("campaign ID cannot be empty")
+	}
+
+	return nil
+}
+
+func ValidateCampaignUpdate(camp *model.Campaign) error {
+	if err := ValidateBase(camp); err != nil {
+		return err
+	}
+
+	if camp.ID == uuid.Nil {
+		return fmt.Errorf("campaign ID cannot be empty for update")
+	}
+
+	if !isValidStatus(camp.Status) {
+		return fmt.Errorf("invalid campaign status: %s", camp.Status)
 	}
 	return nil
 }
@@ -68,7 +99,7 @@ func isValidStatus(status string) bool {
 }
 
 func (s *CampaignService) CreateCampaign(ctx context.Context, camp *model.Campaign) error {
-	if err := ValidateCampaign(camp); err != nil {
+	if err := ValidateCampaignCreate(camp); err != nil {
 		return fmt.Errorf("campaign validation failed: %w", err)
 	}
 	if err := s.campRepo.CreateCampaign(ctx, camp); err != nil {
@@ -78,7 +109,7 @@ func (s *CampaignService) CreateCampaign(ctx context.Context, camp *model.Campai
 }
 
 func (s *CampaignService) UpdateCampaign(ctx context.Context, camp *model.Campaign) error {
-	if err := ValidateCampaign(camp); err != nil {
+	if err := ValidateCampaignUpdate(camp); err != nil {
 		return fmt.Errorf("campaign validation failed: %w", err)
 	}
 	if err := s.campRepo.UpdateCampaign(ctx, camp); err != nil {
