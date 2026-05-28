@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -25,6 +26,7 @@ func (r *EventRepository) CreateEvent(ctx context.Context, event *model.Event) e
 	return nil
 }
 
+// useless
 func (r *EventRepository) GetEventByID(ctx context.Context, ID string) (*model.Event, error) {
 	var event model.Event
 	query := "SELECT id, banner_id, type, created_at, ip, user_agent FROM events WHERE id = $1"
@@ -35,6 +37,7 @@ func (r *EventRepository) GetEventByID(ctx context.Context, ID string) (*model.E
 	return &event, nil
 }
 
+// useless
 func (r *EventRepository) GetAllEvents(ctx context.Context) ([]*model.Event, error) {
 	query := "SELECT id, banner_id, type, created_at, ip, user_agent FROM events"
 	rows, err := r.db.Query(ctx, query)
@@ -50,6 +53,86 @@ func (r *EventRepository) GetAllEvents(ctx context.Context) ([]*model.Event, err
 			return nil, fmt.Errorf("failed to scan event: %w", err)
 		}
 		events = append(events, &event)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error occurred while iterating over events: %w", err)
+	}
+	return events, nil
+}
+
+func (r *EventRepository) GetEventsByBannerID(ctx context.Context, bannerID string, eventType string, limit int, offset int) ([]*model.Event, error) {
+	query := `SELECT id,
+	banner_id,
+	type,
+	created_at, 
+	ip, 
+	user_agent 
+	FROM events 
+	WHERE banner_id = $1
+	`
+	var rows pgx.Rows
+	var err error
+	if eventType != "" {
+		query += " AND type = $2"
+		query += " ORDER BY created_at DESC LIMIT $3 OFFSET $4"
+		rows, err = r.db.Query(ctx, query, bannerID, eventType, limit, offset)
+	} else {
+		query += " ORDER BY created_at DESC LIMIT $2 OFFSET $3"
+		rows, err = r.db.Query(ctx, query, bannerID, limit, offset)
+	}
+	if err != nil {
+		return nil, fmt.Errorf("failed to get events by banner ID: %w", err)
+	}
+
+	defer rows.Close()
+	var events []*model.Event
+	for rows.Next() {
+		event := &model.Event{}
+		err := rows.Scan(&event.ID, &event.Banner_ID, &event.Type, &event.CreatedAt, &event.Ip, &event.User_Agent)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan event: %w", err)
+		}
+		events = append(events, event)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error occurred while iterating over events: %w", err)
+	}
+	return events, nil
+}
+
+func (r *EventRepository) GetEventsByCampaignID(ctx context.Context, campaignID string, eventType string, limit int, offset int) ([]*model.Event, error) {
+	query := `SELECT e.id,
+	e.banner_id,
+	e.type,
+	e.created_at, 
+	e.ip, 
+	e.user_agent 
+	FROM events e
+	JOIN banners b ON e.banner_id = b.id
+	WHERE b.campaign_id = $1
+	`
+	var rows pgx.Rows
+	var err error
+	if eventType != "" {
+		query += " AND e.type = $2"
+		query += " ORDER BY e.created_at DESC LIMIT $3 OFFSET $4"
+		rows, err = r.db.Query(ctx, query, campaignID, eventType, limit, offset)
+	} else {
+		query += " ORDER BY e.created_at DESC LIMIT $2 OFFSET $3"
+		rows, err = r.db.Query(ctx, query, campaignID, limit, offset)
+	}
+	if err != nil {
+		return nil, fmt.Errorf("failed to get events by campaign ID: %w", err)
+	}
+	defer rows.Close()
+	var events []*model.Event
+	for rows.Next() {
+		event := &model.Event{}
+		err := rows.Scan(&event.ID, &event.Banner_ID, &event.Type, &event.CreatedAt, &event.Ip, &event.User_Agent)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan event: %w", err)
+		}
+		events = append(events, event)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, fmt.Errorf("error occurred while iterating over events: %w", err)
