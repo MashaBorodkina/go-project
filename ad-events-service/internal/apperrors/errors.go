@@ -3,10 +3,12 @@ package apperrors
 import "errors"
 
 var (
-	ErrBannerNotFound   = errors.New("banner not found")
-	ErrCampaignNotFound = errors.New("campaign not found")
-	ErrBannerInactive   = errors.New("banner is inactive")
-	ErrCampaignInactive = errors.New("campaign is paused or archived")
-	ErrInvalidEventType = errors.New("invalid event type")
-	ErrEventNotFound    = errors.New("event not found")
+	ErrBannerNotFound            = errors.New("banner not found")
+	ErrCampaignNotFound          = errors.New("campaign not found")
+	ErrBannerInactive            = errors.New("banner is inactive")
+	ErrCampaignInactive          = errors.New("campaign is paused or archived")
+	ErrInvalidEventType          = errors.New("invalid event type")
+	ErrEventNotFound             = errors.New("event not found")
+	ErrNoActiveCampaignAvailable = errors.New("no active campaigns available")
+	ErrNoBannersAvailable        = errors.New("no banners available for display")
 )
