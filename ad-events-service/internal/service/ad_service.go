@@ -1,6 +1,7 @@
 package service
 
 import (
+	"ad-events-service/internal/apperrors"
 	"ad-events-service/internal/model"
 	"ad-events-service/internal/repository"
 	"context"
@@ -22,7 +23,7 @@ func NewAdService(banRepo *repository.BannerRepository, campRepo *repository.Rep
 func (s *AdService) GetBannerForDisplay(ctx context.Context) (*model.Banner, error) {
 	camps, err := s.CampRepo.GetAllCampaigns(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get all banners: %w", err)
+		return nil, fmt.Errorf("failed to get all campaigns: %w", err)
 	}
 
 	campIdFound := ""
@@ -35,7 +36,7 @@ func (s *AdService) GetBannerForDisplay(ctx context.Context) (*model.Banner, err
 	}
 
 	if campIdFound == "" {
-		return nil, fmt.Errorf("no suitable campaign found")
+		return nil, apperrors.ErrNoActiveCampaignAvailable
 	}
 
 	bans, err := s.BanRepo.GetBannersByCampaignId(ctx, campIdFound)
@@ -49,5 +50,5 @@ func (s *AdService) GetBannerForDisplay(ctx context.Context) (*model.Banner, err
 			return ban, nil
 		}
 	}
-	return nil, fmt.Errorf("no active banner found for display")
+	return nil, apperrors.ErrNoBannersAvailable
 }
