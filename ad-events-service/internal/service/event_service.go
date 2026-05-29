@@ -99,3 +99,43 @@ func (s *EventService) GetAllEvents(ctx context.Context) ([]*model.Event, error)
 	}
 	return events, nil
 }
+
+func (s *EventService) GetEventsByBannerID(ctx context.Context, bannerID string, eventType string, limit int, offset int) ([]*model.Event, error) {
+	if bannerID == "" {
+		return nil, fmt.Errorf("banner ID cannot be empty")
+	}
+	if limit <= 0 {
+		limit = 10
+	}
+	if offset < 0 {
+		offset = 0
+	}
+	if eventType != "" && eventType != "impression" && eventType != "click" {
+		return nil, apperrors.ErrInvalidEventType
+	}
+	events, err := s.EventRepo.GetEventsByBannerID(ctx, bannerID, eventType, limit, offset)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get events by banner ID: %w", err)
+	}
+	return events, nil
+}
+
+func (s *EventService) GetEventsByCampaignID(ctx context.Context, campaignID string, eventType string, limit int, offset int) ([]*model.Event, error) {
+	if campaignID == "" {
+		return nil, fmt.Errorf("campaign ID cannot be empty")
+	}
+	if limit <= 0 {
+		limit = 10
+	}
+	if offset < 0 {
+		offset = 0
+	}
+	if eventType != "" && eventType != "impression" && eventType != "click" {
+		return nil, apperrors.ErrInvalidEventType
+	}
+	events, err := s.EventRepo.GetEventsByCampaignID(ctx, campaignID, eventType, limit, offset)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get events by campaign ID: %w", err)
+	}
+	return events, nil
+}
