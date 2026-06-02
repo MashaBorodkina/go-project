@@ -11,4 +11,7 @@ var (
 	ErrEventNotFound             = errors.New("event not found")
 	ErrNoActiveCampaignAvailable = errors.New("no active campaigns available")
 	ErrNoBannersAvailable        = errors.New("no banners available for display")
+	ErrInvalidBannerID           = errors.New("invalid banner ID format")
+	ErrInvalidDateRange          = errors.New("invalid date range: 'from' date must be before 'to' date")
+	ErrBothDatesRequired         = errors.New("both 'from' and 'to' dates must be provided together")
 )
