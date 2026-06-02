@@ -19,10 +19,22 @@ func NewStatsRepository(db *pgxpool.Pool) *StatsRepository {
 	return &StatsRepository{db: db}
 }
 
-func (r *StatsRepository) GetBannerStatsByID(ctx context.Context, bannerID string) (*model.BannerStats, error) {
+func (r *StatsRepository) GetBannerStatsByID(ctx context.Context, bannerID string, from time.Time, to time.Time) (*model.BannerStats, error) {
 	var stats model.BannerStats
-	query := "SELECT type, COUNT(*) as count FROM events WHERE banner_id = $1 group by type"
-	rows, err := r.db.Query(ctx, query, bannerID)
+	query := `SELECT type, COUNT(*) as count 
+	FROM events 
+	WHERE banner_id = $1
+	`
+	args := []any{bannerID}
+
+	if !from.IsZero() && !to.IsZero() {
+		query += ` AND created_at >= $2 AND created_at <= $3`
+		args = append(args, from, to)
+	}
+
+	query += ` group by type`
+
+	rows, err := r.db.Query(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get banner stats by ID: %w", err)
 	}
