@@ -73,19 +73,33 @@ func (r *StatsRepository) GetBannerStatsByID(ctx context.Context, bannerID strin
 	return &stats, nil
 }
 
-func (r *StatsRepository) GetCampaignStatsByID(ctx context.Context, campaignID string) (*model.CampaignStats, error) {
+func (r *StatsRepository) GetCampaignStatsByID(ctx context.Context, campaignID string, from time.Time, to time.Time) (*model.CampaignStats, error) {
 	var stats model.CampaignStats
-	query := `SELECT b.campaign_id, c.name, e.type, COUNT(*) as count, c.budget 
+	query := `SELECT c.name, e.type, COUNT(*) as count, c.budget 
 	FROM events e 
 	JOIN banners b ON e.banner_id = b.id 
 	JOIN campaigns c ON b.campaign_id = c.id 
 	WHERE b.campaign_id = $1 
-	group by b.campaign_id, c.name, e.type, c.budget`
-	rows, err := r.db.Query(ctx, query, campaignID)
+	`
+	args := []any{campaignID}
+	if !from.IsZero() && !to.IsZero() {
+		query += ` AND e.created_at >= $2 AND e.created_at <= $3`
+		args = append(args, from, to)
+	}
+
+	query += ` group by c.name, e.type, c.budget`
+	rows, err := r.db.Query(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get campaign stats by ID: %w", err)
 	}
 	defer rows.Close()
+
+	id, err := uuid.Parse(campaignID)
+	if err != nil {
+		return nil, fmt.Errorf("invalid campaign ID format: %w", err)
+	}
+
+	stats.CampaignID = id
 
 	found := false
 
@@ -93,7 +107,7 @@ func (r *StatsRepository) GetCampaignStatsByID(ctx context.Context, campaignID s
 		found = true
 		var eventType string
 		var count int
-		if err := rows.Scan(&stats.CampaignID, &stats.CampaignName, &eventType, &count, &stats.Budget); err != nil {
+		if err := rows.Scan(&stats.CampaignName, &eventType, &count, &stats.Budget); err != nil {
 			return nil, fmt.Errorf("failed to scan campaign stats: %w", err)
 		}
 		switch eventType {
@@ -116,14 +130,22 @@ func (r *StatsRepository) GetCampaignStatsByID(ctx context.Context, campaignID s
 	return &stats, nil
 }
 
-func (r *StatsRepository) GetDailyStats(ctx context.Context, campaignID string) ([]*model.DailyStats, error) {
-	query := `Select b.campaign_id, e.type, Dte(e.created_at) as date, Count(*) as count
+func (r *StatsRepository) GetDailyStats(ctx context.Context, campaignID string, from time.Time, to time.Time) ([]*model.DailyStats, error) {
+	query := `Select Date(e.created_at) as date, e.type, Count(*) as count
 	 From events e
 	 Join banners b On e.banner_id = b.id
 	 Where b.campaign_id = $1 
-	 Group By Date(e.created_at), e.type`
+	 `
+	args := []any{campaignID}
 
-	rows, err := r.db.Query(ctx, query, campaignID)
+	if !from.IsZero() && !to.IsZero() {
+		query += ` AND e.created_at >= $2 AND e.created_at <= $3`
+		args = append(args, from, to)
+	}
+
+	query += ` Group By Date(e.created_at), e.type`
+
+	rows, err := r.db.Query(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get daily stats: %w", err)
 	}
