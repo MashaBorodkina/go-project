@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"ad-events-service/internal/apperrors"
 	"ad-events-service/internal/model"
 	"context"
 	"fmt"
@@ -21,7 +22,7 @@ func (r *Repository) GetCampaignByID(ctx context.Context, id string) (*model.Cam
 	query := "SELECT id, name, budget, status, created_at, updated_at FROM campaigns WHERE id = $1"
 	err := r.db.QueryRow(ctx, query, id).Scan(&campaign.ID, &campaign.Name, &campaign.Budget, &campaign.Status, &campaign.CreatedAt, &campaign.UpdatedAt)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get campaign by ID: %w", err)
+		return nil, apperrors.ErrCampaignNotFound
 	}
 	return &campaign, nil
 }
