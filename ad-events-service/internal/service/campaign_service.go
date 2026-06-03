@@ -28,9 +28,6 @@ func (s *CampaignService) GetCampaignByID(ctx context.Context, campID string) (*
 		return nil, fmt.Errorf("failed to get campaign by ID: %w", err)
 	}
 
-	if camp == nil {
-		return nil, fmt.Errorf("no campaign found for campaign ID: %s", campID)
-	}
 	return camp, nil
 }
 
