@@ -13,7 +13,7 @@ type AdHandler struct {
 	AdService *service.AdService
 }
 
-func NewAdServiceHandler(adService *service.AdService) *AdHandler {
+func NewAdHandler(adService *service.AdService) *AdHandler {
 	return &AdHandler{AdService: adService}
 }
 
