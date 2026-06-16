@@ -6,6 +6,7 @@ import (
 	"ad-events-service/internal/model"
 	"ad-events-service/internal/service"
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -63,6 +64,7 @@ func (h *CampaignHandler) CreateCampaign(c *gin.Context) {
 	}
 	err := h.CampService.CreateCampaign(c.Request.Context(), camp)
 	if err != nil {
+		fmt.Printf("Error creating campaign: %v\n", err)
 		Error(c, http.StatusInternalServerError, "Failed to create campaign")
 		return
 	}
