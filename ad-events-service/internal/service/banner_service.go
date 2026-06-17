@@ -1,6 +1,7 @@
 package service
 
 import (
+	"ad-events-service/internal/apperrors"
 	"ad-events-service/internal/dto"
 	"ad-events-service/internal/model"
 	"ad-events-service/internal/repository"
@@ -11,11 +12,12 @@ import (
 )
 
 type BannerService struct {
-	BanRepo *repository.BannerRepository
+	BanRepo  *repository.BannerRepository
+	CampRepo *repository.Repository
 }
 
-func NewBannerService(BanRepo *repository.BannerRepository) *BannerService {
-	return &BannerService{BanRepo: BanRepo}
+func NewBannerService(BanRepo *repository.BannerRepository, CampRepo *repository.Repository) *BannerService {
+	return &BannerService{BanRepo: BanRepo, CampRepo: CampRepo}
 }
 
 func (s *BannerService) GetBannerByID(ctx context.Context, banID string) (*model.Banner, error) {
@@ -32,10 +34,22 @@ func (s *BannerService) GetBannerByID(ctx context.Context, banID string) (*model
 	return ban, nil
 }
 
-func (s *BannerService) GetAllBanners(ctx context.Context) ([]*model.Banner, error) {
-	bans, err := s.BanRepo.GetAllBanners(ctx)
+func (s *BannerService) GetAllBannersByCampaignId(ctx context.Context, campaignId string) ([]*model.Banner, error) {
+	if campaignId == "" {
+		return nil, fmt.Errorf("campaign ID cannot be empty")
+	}
+	if _, err := uuid.Parse(campaignId); err != nil {
+		return nil, fmt.Errorf("invalid campaign ID format: %w", err)
+	}
+	if _, err := s.CampRepo.GetCampaignByID(ctx, campaignId); err != nil {
+		return nil, fmt.Errorf("campaign not found: %w", err)
+	}
+	bans, err := s.BanRepo.GetAllBannersByCampaignId(ctx, campaignId)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get all banners: %w", err)
+	}
+	if len(bans) == 0 {
+		return nil, apperrors.ErrBannerNotFound
 	}
 	return bans, nil
 }
