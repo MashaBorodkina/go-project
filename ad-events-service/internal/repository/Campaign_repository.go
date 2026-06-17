@@ -27,6 +27,18 @@ func (r *Repository) GetCampaignByID(ctx context.Context, id string) (*model.Cam
 	return &campaign, nil
 }
 
+func (r *Repository) GetCampaignByName(ctx context.Context, name string) (*model.Campaign, error) {
+	var campaign model.Campaign
+	query := `SELECT id, name, budget, status, created_at, updated_at 
+	FROM campaigns 
+	WHERE name = $1`
+	err := r.db.QueryRow(ctx, query, name).Scan(&campaign.ID, &campaign.Name, &campaign.Budget, &campaign.Status, &campaign.CreatedAt, &campaign.UpdatedAt)
+	if err != nil {
+		return nil, apperrors.ErrCampaignNotFound
+	}
+	return &campaign, nil
+}
+
 func (r *Repository) GetAllCampaigns(ctx context.Context) ([]*model.Campaign, error) {
 	query := "SELECT id, name, budget, status, created_at, updated_at FROM campaigns"
 	rows, err := r.db.Query(ctx, query)
