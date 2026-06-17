@@ -6,9 +6,12 @@ import (
 	"ad-events-service/internal/model"
 	"ad-events-service/internal/service"
 	"errors"
+	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 )
 
@@ -18,6 +21,33 @@ type BannerHandler struct {
 
 func NewBannerHandler(banService *service.BannerService) *BannerHandler {
 	return &BannerHandler{BanService: banService}
+}
+
+func validationMessage(err error) string {
+	var valErrs validator.ValidationErrors
+
+	if errors.As(err, &valErrs) {
+		for _, fieldErr := range valErrs {
+			field := fieldErr.Field()
+			tag := fieldErr.Tag()
+			if tag == "required" {
+				switch field {
+				case "Title":
+					return "Title is required"
+				case "ImageUrl":
+					return "Image URL is required"
+				case "CampaignID":
+					return "Campaign ID is required"
+				default:
+					return field + " is required"
+				}
+			}
+		}
+	}
+	if strings.Contains(err.Error(), "invalid character") {
+		return "Invalid JSON format"
+	}
+	return "Invalid request body"
 }
 
 func (h *BannerHandler) GetBannerByID(c *gin.Context) {
@@ -41,17 +71,37 @@ func (h *BannerHandler) GetBannerByID(c *gin.Context) {
 	Success(c, http.StatusOK, ban)
 }
 
-func (h *BannerHandler) GetAllBanners(c *gin.Context) {
-	bans, err := h.BanService.GetAllBanners(c.Request.Context())
+func (h *BannerHandler) GetAllBannersByCampaignId(c *gin.Context) {
+	campaignId := c.Param("id")
+	_, err := uuid.Parse(campaignId)
 	if err != nil {
-		Error(c, http.StatusInternalServerError, "Failed to retrieve banners")
+		Error(c, http.StatusBadRequest, "Invalid campaign ID format")
+		return
+	}
+
+	bans, err := h.BanService.GetAllBannersByCampaignId(c.Request.Context(), campaignId)
+	if err != nil {
+		if errors.Is(err, apperrors.ErrCampaignNotFound) {
+			Error(c, http.StatusNotFound, "Campaign not found")
+			return
+		}
+		if errors.Is(err, apperrors.ErrBannerNotFound) {
+			Error(c, http.StatusNotFound, "Banner not found")
+			return
+		}
+		if errors.Is(err, apperrors.ErrInvalidCampaignID) {
+			Error(c, http.StatusBadRequest, "Invalid campaign ID format ")
+			return
+		}
+		fmt.Printf("Get all banners error: %v\n", err)
+		Error(c, http.StatusInternalServerError, "Failed to retrieve banner")
 		return
 	}
 	Success(c, http.StatusOK, bans)
 }
 
 func (h *BannerHandler) CreateBanner(c *gin.Context) {
-	campaignID := c.Param("campaign_id")
+	campaignID := c.Param("id")
 	parsId, err := uuid.Parse(campaignID)
 	if err != nil {
 		Error(c, http.StatusBadRequest, "Invalid campaign ID format")
@@ -63,7 +113,11 @@ func (h *BannerHandler) CreateBanner(c *gin.Context) {
 		IsActive bool   `json:"is_active"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		Error(c, http.StatusBadRequest, "Invalid request body")
+		Error(c, http.StatusBadRequest, validationMessage(err))
+		return
+	}
+	if req.Title == "" || req.ImageUrl == "" {
+		Error(c, http.StatusBadRequest, "Title and Image URL are required")
 		return
 	}
 
@@ -75,6 +129,7 @@ func (h *BannerHandler) CreateBanner(c *gin.Context) {
 	}
 	err = h.BanService.CreateBanner(c.Request.Context(), banner)
 	if err != nil {
+		fmt.Printf("Create banner error: %v\n", err)
 		Error(c, http.StatusInternalServerError, "Failed to create banner")
 		return
 	}
