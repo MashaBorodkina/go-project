@@ -3,7 +3,7 @@ package apperrors
 import "errors"
 
 var (
-	ErrBannerNotFound            = errors.New("banner not found")
+	ErrBannerNotFound            = errors.New("banner or banners not found")
 	ErrCampaignNotFound          = errors.New("campaign not found")
 	ErrBannerInactive            = errors.New("banner is inactive")
 	ErrCampaignInactive          = errors.New("campaign is paused or archived")
