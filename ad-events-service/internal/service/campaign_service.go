@@ -31,6 +31,19 @@ func (s *CampaignService) GetCampaignByID(ctx context.Context, campID string) (*
 	return camp, nil
 }
 
+func (s *CampaignService) GetCampaignByName(ctx context.Context, name string) (*model.Campaign, error) {
+	if name == "" {
+		return nil, fmt.Errorf("campaign name cannot be empty")
+	}
+
+	camp, err := s.campRepo.GetCampaignByName(ctx, name)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get campaign by name: %w", err)
+	}
+
+	return camp, nil
+}
+
 func (s *CampaignService) GetAllCampaigns(ctx context.Context) ([]*model.Campaign, error) {
 	camps, err := s.campRepo.GetAllCampaigns(ctx)
 	if err != nil {
