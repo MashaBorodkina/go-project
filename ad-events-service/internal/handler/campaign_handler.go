@@ -40,6 +40,24 @@ func (h *CampaignHandler) GetCampaignByID(c *gin.Context) {
 	Success(c, http.StatusOK, camp)
 }
 
+func (h *CampaignHandler) GetCampaignByName(c *gin.Context) {
+	name := c.Query("name")
+	if name == "" {
+		Error(c, http.StatusBadRequest, "Campaign name query parameter is required")
+		return
+	}
+	camp, err := h.CampService.GetCampaignByName(c.Request.Context(), name)
+	if err != nil {
+		if errors.Is(err, apperrors.ErrCampaignNotFound) {
+			Error(c, http.StatusNotFound, "Campaign not found")
+			return
+		}
+		Error(c, http.StatusInternalServerError, "Failed to retrieve campaign")
+		return
+	}
+	Success(c, http.StatusOK, camp)
+}
+
 func (h *CampaignHandler) GetAllCampaigns(c *gin.Context) {
 	camps, err := h.CampService.GetAllCampaigns(c.Request.Context())
 	if err != nil {
