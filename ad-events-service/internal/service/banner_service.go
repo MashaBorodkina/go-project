@@ -22,15 +22,13 @@ func NewBannerService(BanRepo *repository.BannerRepository, CampRepo *repository
 
 func (s *BannerService) GetBannerByID(ctx context.Context, banID string) (*model.Banner, error) {
 	if banID == "" {
-		return nil, fmt.Errorf("banner ID cannot be empty")
+		return nil, apperrors.ErrInvalidBannerID
 	}
 	ban, err := s.BanRepo.GetBannerByID(ctx, banID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get banner by ID: %w", err)
+		return nil, err
 	}
-	if ban == nil {
-		return nil, fmt.Errorf("no banner found for banner ID: %s", banID)
-	}
+
 	return ban, nil
 }
 
