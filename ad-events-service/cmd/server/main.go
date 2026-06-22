@@ -68,14 +68,12 @@ func main() {
 	router.DELETE("/banners/:id", bannerHandler.DeleteBanner)
 	router.PATCH("/banners/:id", bannerHandler.PatchBanner)
 
-	router.GET("/stats/banner/:id", statsHandler.GetBannerStatsByID)
-	router.GET("/stats/campaign/:id", statsHandler.GetCampaignStatsByID)
-	router.GET("/stats/campaign/:id/daily", statsHandler.GetDailyStats)
+	router.GET("banners/:id/stats", statsHandler.GetBannerStatsByID)
+	router.GET("campaigns/:id/stats", statsHandler.GetCampaignStatsByID)
+	router.GET("campaigns/:id/stats/daily", statsHandler.GetDailyStats)
 
-	router.POST("/events", eventHandler.CreateEvent)
-	router.GET("/events/:event_id", eventHandler.GetEventByID)
-	router.GET("/events/banner/:banner_id/events", eventHandler.GetEventsByBannerID)
-	router.GET("/events/campaign/:campaign_id/events", eventHandler.GetEventsByCampaignID)
+	router.POST("/banners/:id/impression", eventHandler.TrackImpression)
+	router.POST("/banners/:id/click", eventHandler.TrackClick)
 
 	router.GET("/display", adHandler.GetBannerForDisplay)
 
