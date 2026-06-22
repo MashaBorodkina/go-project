@@ -1,10 +1,13 @@
 package repository
 
 import (
+	"ad-events-service/internal/apperrors"
 	"ad-events-service/internal/model"
 	"context"
+	"errors"
 	"fmt"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -18,9 +21,14 @@ func NewBannerRepository(db *pgxpool.Pool) *BannerRepository {
 
 func (r *BannerRepository) GetBannerByID(ctx context.Context, id string) (*model.Banner, error) {
 	var banner model.Banner
-	query := "SELECT id, campaign_id, name, image_url, created_at, updated_at FROM banners WHERE id = $1"
+	query := `SELECT id, campaign_id, title, image_url, created_at, updated_at 
+	FROM banners 
+	WHERE id = $1`
 	err := r.db.QueryRow(ctx, query, id).Scan(&banner.ID, &banner.CampaignID, &banner.Title, &banner.ImageUrl, &banner.CreatedAt, &banner.UpdatedAt)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, apperrors.ErrBannerNotFound
+		}
 		return nil, fmt.Errorf("failed to get banner by ID: %w", err)
 	}
 	return &banner, nil
@@ -54,7 +62,9 @@ func (r *BannerRepository) GetAllBannersByCampaignId(ctx context.Context, campai
 }
 
 func (r *BannerRepository) CreateBanner(ctx context.Context, banner *model.Banner) error {
-	query := `INSERT INTO banners (campaign_id, title, image_url) VALUES ($1, $2, $3) RETURNING id, title, image_url, is_active, created_at, updated_at`
+	query := `INSERT INTO banners (campaign_id, title, image_url) 
+	VALUES ($1, $2, $3) 
+	RETURNING id, title, image_url, is_active, created_at, updated_at`
 	err := r.db.QueryRow(ctx, query, banner.CampaignID, banner.Title, banner.ImageUrl).Scan(&banner.ID, &banner.Title, &banner.ImageUrl, &banner.IsActive, &banner.CreatedAt, &banner.UpdatedAt)
 	if err != nil {
 		return fmt.Errorf("failed to create banner: %w", err)
