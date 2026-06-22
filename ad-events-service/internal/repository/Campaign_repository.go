@@ -63,8 +63,8 @@ func (r *Repository) GetAllCampaigns(ctx context.Context) ([]*model.Campaign, er
 func (r *Repository) CreateCampaign(ctx context.Context, campaign *model.Campaign) error {
 	query := `INSERT INTO campaigns (name, budget) 
 	VALUES ($1, $2) 
-	RETURNING id, name, budget, status, created_at, updated_at`
-	err := r.db.QueryRow(ctx, query, campaign.Name, campaign.Budget).Scan(&campaign.ID, &campaign.Name, &campaign.Budget, &campaign.Status, &campaign.CreatedAt, &campaign.UpdatedAt)
+	RETURNING id, name, budget, status, created_at`
+	err := r.db.QueryRow(ctx, query, campaign.Name, campaign.Budget).Scan(&campaign.ID, &campaign.Name, &campaign.Budget, &campaign.Status, &campaign.CreatedAt)
 	if err != nil {
 		return fmt.Errorf("failed to create campaign: %w", err)
 	}
