@@ -134,7 +134,16 @@ func (h *BannerHandler) CreateBanner(c *gin.Context) {
 		Error(c, http.StatusInternalServerError, "Failed to create banner")
 		return
 	}
-	Success(c, http.StatusCreated, banner)
+	response := dto.BannerResponseCreate{
+		ID:         banner.ID.String(),
+		CampaignID: banner.CampaignID.String(),
+		Title:      banner.Title,
+		ImageUrl:   banner.ImageUrl,
+		IsActive:   banner.IsActive,
+		CreatedAt:  banner.CreatedAt,
+	}
+
+	Success(c, http.StatusCreated, response)
 }
 
 func (h *BannerHandler) UpdateBanner(c *gin.Context) {
