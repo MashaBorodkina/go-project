@@ -33,7 +33,7 @@ func (s *EventService) TrackEvent(ctx context.Context, ban_id string, eventType 
 	}
 
 	if ban == nil {
-		return apperrors.ErrBannerInactive
+		return apperrors.ErrBannerNotFound
 	}
 	if !ban.IsActive {
 		return apperrors.ErrBannerInactive
