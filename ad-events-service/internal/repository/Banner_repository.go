@@ -64,8 +64,8 @@ func (r *BannerRepository) GetAllBannersByCampaignId(ctx context.Context, campai
 func (r *BannerRepository) CreateBanner(ctx context.Context, banner *model.Banner) error {
 	query := `INSERT INTO banners (campaign_id, title, image_url) 
 	VALUES ($1, $2, $3) 
-	RETURNING id, title, image_url, is_active, created_at, updated_at`
-	err := r.db.QueryRow(ctx, query, banner.CampaignID, banner.Title, banner.ImageUrl).Scan(&banner.ID, &banner.Title, &banner.ImageUrl, &banner.IsActive, &banner.CreatedAt, &banner.UpdatedAt)
+	RETURNING id, title, image_url, is_active, created_at`
+	err := r.db.QueryRow(ctx, query, banner.CampaignID, banner.Title, banner.ImageUrl).Scan(&banner.ID, &banner.Title, &banner.ImageUrl, &banner.IsActive, &banner.CreatedAt)
 	if err != nil {
 		return fmt.Errorf("failed to create banner: %w", err)
 	}
