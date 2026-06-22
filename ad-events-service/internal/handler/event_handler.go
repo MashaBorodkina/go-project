@@ -20,19 +20,23 @@ func NewEventHandler(eventService *service.EventService) *EventHandler {
 	return &EventHandler{EventService: eventService}
 }
 
-func (h *EventHandler) CreateEvent(c *gin.Context) {
-	ip := c.ClientIP()
-	userAgent := c.Request.UserAgent()
-	var req struct {
-		BannerID string `json:"banner_id" binding:"required,uuid"`
-		Type     string `json:"type" binding:"required"`
-	}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		Error(c, http.StatusBadRequest, "Invalid request body")
+func (h *EventHandler) CreateEvent(c *gin.Context, eventType string, successMessage string) {
+	bannerID := c.Param("id")
+	_, err := uuid.Parse(bannerID)
+	if err != nil {
+		Error(c, http.StatusBadRequest, "Invalid banner ID format")
 		return
 	}
-	err := h.EventService.TrackEvent(c.Request.Context(), req.BannerID, req.Type, ip, userAgent)
+	ip := c.ClientIP()
+	userAgent := c.Request.UserAgent()
+
+	err = h.EventService.TrackEvent(c.Request.Context(), bannerID, eventType, ip, userAgent)
 	if err != nil {
+
+		if errors.Is(err, apperrors.ErrBannerNotFound) {
+			Error(c, http.StatusNotFound, "Banner not found")
+			return
+		}
 		if errors.Is(err, apperrors.ErrBannerInactive) {
 			Error(c, http.StatusBadRequest, "Banner is inactive")
 			return
@@ -53,6 +57,14 @@ func (h *EventHandler) CreateEvent(c *gin.Context) {
 		return
 	}
 	Success(c, http.StatusCreated, "Event tracked successfully")
+}
+
+func (h *EventHandler) TrackImpression(c *gin.Context) {
+	h.CreateEvent(c, "impression", "Impression tracked successfully")
+}
+
+func (h *EventHandler) TrackClick(c *gin.Context) {
+	h.CreateEvent(c, "click", "Click tracked successfully")
 }
 
 func (h *EventHandler) GetEventByID(c *gin.Context) {
