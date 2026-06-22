@@ -64,6 +64,7 @@ func (h *BannerHandler) GetBannerByID(c *gin.Context) {
 			Error(c, http.StatusNotFound, "Banner not found")
 			return
 		}
+		fmt.Printf("Get banner by ID error: %v\n", err)
 		Error(c, http.StatusInternalServerError, "Failed to retrieve banner")
 		return
 	}
