@@ -38,7 +38,7 @@ func (h *EventHandler) CreateEvent(c *gin.Context, eventType string, successMess
 			return
 		}
 		if errors.Is(err, apperrors.ErrBannerInactive) {
-			Error(c, http.StatusBadRequest, "Banner is inactive")
+			Error(c, http.StatusForbidden, "Banner is inactive")
 			return
 		}
 		if errors.Is(err, apperrors.ErrCampaignNotFound) {
@@ -46,7 +46,7 @@ func (h *EventHandler) CreateEvent(c *gin.Context, eventType string, successMess
 			return
 		}
 		if errors.Is(err, apperrors.ErrCampaignInactive) {
-			Error(c, http.StatusBadRequest, "Campaign is inactive")
+			Error(c, http.StatusForbidden, "Campaign is inactive")
 			return
 		}
 		if errors.Is(err, apperrors.ErrInvalidEventType) {
@@ -56,7 +56,7 @@ func (h *EventHandler) CreateEvent(c *gin.Context, eventType string, successMess
 		Error(c, http.StatusInternalServerError, "Failed to track event")
 		return
 	}
-	Success(c, http.StatusCreated, "Event tracked successfully")
+	Success(c, http.StatusCreated, successMessage)
 }
 
 func (h *EventHandler) TrackImpression(c *gin.Context) {
