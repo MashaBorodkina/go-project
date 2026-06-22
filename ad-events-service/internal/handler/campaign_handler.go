@@ -86,7 +86,14 @@ func (h *CampaignHandler) CreateCampaign(c *gin.Context) {
 		Error(c, http.StatusInternalServerError, "Failed to create campaign")
 		return
 	}
-	Success(c, http.StatusCreated, camp)
+	response := dto.CreateCampaignResponse{
+		ID:        camp.ID,
+		Name:      camp.Name,
+		Budget:    camp.Budget,
+		Status:    camp.Status,
+		CreatedAt: camp.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
+	}
+	Success(c, http.StatusCreated, response)
 }
 
 func (h *CampaignHandler) UpdateCampaign(c *gin.Context) {
