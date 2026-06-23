@@ -2,9 +2,11 @@ package handler
 
 import (
 	"ad-events-service/internal/apperrors"
+	"ad-events-service/internal/dto"
 	"ad-events-service/internal/service"
 	"errors"
 	"net/http"
+	"time"
 
 	"strconv"
 
@@ -56,7 +58,11 @@ func (h *EventHandler) CreateEvent(c *gin.Context, eventType string, successMess
 		Error(c, http.StatusInternalServerError, "Failed to track event")
 		return
 	}
-	Success(c, http.StatusCreated, successMessage)
+	response := dto.TrackEventResponse{
+		BannerID:  bannerID,
+		CreatedAt: time.Now(),
+	}
+	Success(c, http.StatusOK, response)
 }
 
 func (h *EventHandler) TrackImpression(c *gin.Context) {
