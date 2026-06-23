@@ -21,10 +21,10 @@ func NewBannerRepository(db *pgxpool.Pool) *BannerRepository {
 
 func (r *BannerRepository) GetBannerByID(ctx context.Context, id string) (*model.Banner, error) {
 	var banner model.Banner
-	query := `SELECT id, campaign_id, title, image_url, created_at, updated_at 
+	query := `SELECT id, campaign_id, title, image_url, created_at, updated_at, is_active
 	FROM banners 
 	WHERE id = $1`
-	err := r.db.QueryRow(ctx, query, id).Scan(&banner.ID, &banner.CampaignID, &banner.Title, &banner.ImageUrl, &banner.CreatedAt, &banner.UpdatedAt)
+	err := r.db.QueryRow(ctx, query, id).Scan(&banner.ID, &banner.CampaignID, &banner.Title, &banner.ImageUrl, &banner.CreatedAt, &banner.UpdatedAt, &banner.IsActive)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, apperrors.ErrBannerNotFound
