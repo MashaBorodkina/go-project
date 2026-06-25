@@ -33,6 +33,7 @@ func (r *StatsRepository) GetBannerStatsByID(
 	args := []any{bannerID}
 
 	if !from.IsZero() && !to.IsZero() {
+		to = to.AddDate(0, 0, 1)
 		query += ` AND created_at >= $2 AND created_at <= $3`
 		args = append(args, from, to)
 	}
@@ -94,6 +95,7 @@ func (r *StatsRepository) GetCampaignStatsByID(
 	`
 	args := []any{campaignID}
 	if !from.IsZero() && !to.IsZero() {
+		to = to.AddDate(0, 0, 1)
 		query += ` AND e.created_at >= $2 AND e.created_at <= $3`
 		args = append(args, from, to)
 	}
@@ -156,6 +158,7 @@ func (r *StatsRepository) GetDailyStats(
 	args := []any{campaignID}
 
 	if !from.IsZero() && !to.IsZero() {
+		to = to.AddDate(0, 0, 1)
 		query += ` AND e.created_at >= $2 AND e.created_at <= $3`
 		args = append(args, from, to)
 	}
