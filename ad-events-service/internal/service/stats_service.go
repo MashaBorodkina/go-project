@@ -1,11 +1,12 @@
 package service
 
 import (
+	"context"
+	"time"
+
 	"ad-events-service/internal/apperrors"
 	"ad-events-service/internal/model"
 	"ad-events-service/internal/repository"
-	"context"
-	"time"
 )
 
 type StatsService struct {
@@ -27,7 +28,12 @@ func CalculateCTR(clicks int, impressions int) float64 {
 	return (float64(clicks) / float64(impressions)) * 100
 }
 
-func (s *StatsService) GetBannerStatsByID(ctx context.Context, bannerID string, from time.Time, to time.Time) (*model.BannerStats, error) {
+func (s *StatsService) GetBannerStatsByID(
+	ctx context.Context,
+	bannerID string,
+	from time.Time,
+	to time.Time,
+) (*model.BannerStats, error) {
 	if bannerID == "" {
 		return nil, apperrors.ErrInvalidBannerID
 	}
@@ -53,7 +59,12 @@ func (s *StatsService) GetBannerStatsByID(ctx context.Context, bannerID string, 
 	return stats, nil
 }
 
-func (s *StatsService) GetCampaignStatsByID(ctx context.Context, campaignID string, from time.Time, to time.Time) (*model.CampaignStats, error) {
+func (s *StatsService) GetCampaignStatsByID(
+	ctx context.Context,
+	campaignID string,
+	from time.Time,
+	to time.Time,
+) (*model.CampaignStats, error) {
 	if campaignID == "" {
 		return nil, apperrors.ErrInvalidCampaignID
 	}
@@ -80,7 +91,12 @@ func (s *StatsService) GetCampaignStatsByID(ctx context.Context, campaignID stri
 	return stats, nil
 }
 
-func (s *StatsService) GetDailyStats(ctx context.Context, campaignID string, from time.Time, to time.Time) ([]*model.DailyStats, error) {
+func (s *StatsService) GetDailyStats(
+	ctx context.Context,
+	campaignID string,
+	from time.Time,
+	to time.Time,
+) ([]*model.DailyStats, error) {
 	if campaignID == "" {
 		return nil, apperrors.ErrInvalidCampaignID
 	}
