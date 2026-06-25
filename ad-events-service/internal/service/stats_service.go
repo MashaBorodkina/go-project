@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"math"
 	"time"
 
 	"ad-events-service/internal/apperrors"
@@ -25,7 +26,7 @@ func CalculateCTR(clicks int, impressions int) float64 {
 	if impressions == 0 {
 		return 0.0
 	}
-	return (float64(clicks) / float64(impressions)) * 100
+	return math.Round((float64(clicks)/float64(impressions))*100*100) / 100
 }
 
 func (s *StatsService) GetBannerStatsByID(
