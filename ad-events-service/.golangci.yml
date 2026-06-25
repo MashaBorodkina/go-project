@@ -1,0 +1,107 @@
+version: "2"
+
+run:
+  concurrency: 4
+  modules-download-mode: readonly
+  issues-exit-code: 1
+  tests: true
+
+linters:
+  default: all
+  disable:
+    - cyclop
+    - depguard
+    - gocyclo
+    - wsl
+    - revive
+    - exhaustruct
+    - funlen
+    - wrapcheck
+    - varnamelen
+    - testpackage
+  settings:
+    errcheck:
+      check-type-assertions: true
+    goconst:
+      min-len: 3
+      min-occurrences: 3
+    gocritic:
+      enabled-tags:
+        - performance
+        - diagnostic
+      settings:
+        captLocal:
+          paramsOnly: true
+        rangeValCopy:
+          sizeThreshold: 32
+    govet:
+      disable:
+        - fieldalignment
+      enable-all: true
+    lll:
+      line-length: 150
+      tab-width: 4
+    misspell:
+      locale: US
+    nakedret:
+      max-func-lines: 1
+    prealloc:
+      simple: true
+      range-loops: true
+      for-loops: false
+    tagliatelle:
+      case:
+        rules:
+          json: snake
+        use-field-name: true
+    unparam:
+      check-exported: true
+  exclusions:
+    generated: lax
+    rules:
+      - linters:
+          - govet
+        text: declaration of "err" shadows declaration
+      - linters:
+          - lll
+        source: '^//( )?go:generate '
+      - linters:
+          - gochecknoglobals
+          - gochecknoinits
+        path: internal/metrics/.*
+      - path: (.+)\.go$
+        text: ST1000 # disable package comments check
+    paths:
+      - vendor
+      - third_party$
+      - builtin$
+      - examples$
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  new: false
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - gofumpt
+    - goimports
+  settings:
+    gci:
+      sections:
+        - standard
+        - default
+        - prefix(ad-events-service/)
+    gofmt:
+      simplify: true
+    goimports:
+      local-prefixes:
+        - ad-events-service
+  exclusions:
+    generated: lax
+    paths:
+      - vendor
+      - third_party$
+      - builtin$
+      - examples$
