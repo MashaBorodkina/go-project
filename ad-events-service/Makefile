@@ -5,7 +5,10 @@ export
 MIGRATIONS_PATH = migrations
 
 fmt:
-	go fmt ./...
+	$(HOME)/go/bin/golangci-lint fmt
+
+lint:
+	$(HOME)/go/bin/golangci-lint run --config .golangci.yml
 
 run:
 	go run ./cmd/server
@@ -27,3 +30,5 @@ migrate-force-local:
 
 migrate-force:
 	$(HOME)/go/bin/migrate -path $(MIGRATIONS_PATH) -database "$(DATABASE_URL)" force $(VERSION)
+
+	
