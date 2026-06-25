@@ -1,21 +1,32 @@
 package main
 
 import (
-	"ad-events-service/internal/handler"
-	"ad-events-service/internal/repository"
-	"ad-events-service/internal/service"
 	"context"
-	"fmt"
 	"log"
 	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
+	"go.uber.org/zap"
+
+	"ad-events-service/internal/handler"
+	"ad-events-service/internal/repository"
+	"ad-events-service/internal/service"
 )
 
 func main() {
-	err := godotenv.Load()
+	logger, err := zap.NewProduction()
+	if err != nil {
+		log.Fatalf("Failed to initialize logger: %v", err)
+	}
+	defer func() {
+		if err := logger.Sync(); err != nil {
+			log.Printf("Failed to sync logger: %v", err)
+		}
+	}()
+
+	err = godotenv.Load()
 	if err != nil {
 		log.Fatalf("Error loading .env file: %v", err)
 	}
@@ -33,7 +44,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Unable to ping database: %v", err)
 	}
-	fmt.Println("Successfully connected to the database!")
+	logger.Info("Successfully connected to the database!")
 
 	campaignRepo := repository.NewRepository(pool)
 	bannerRepo := repository.NewBannerRepository(pool)
@@ -46,8 +57,8 @@ func main() {
 	eventService := service.NewEventService(eventRepo, campaignRepo, bannerRepo)
 	adService := service.NewAdService(bannerRepo, campaignRepo)
 
-	campaignHandler := handler.NewCampaignHandler(campaignService)
-	bannerHandler := handler.NewBannerHandler(bannerService)
+	campaignHandler := handler.NewCampaignHandler(campaignService, logger)
+	bannerHandler := handler.NewBannerHandler(bannerService, logger)
 	statsHandler := handler.NewStatsHandler(statsService)
 	eventHandler := handler.NewEventHandler(eventService)
 	adHandler := handler.NewAdHandler(adService)
