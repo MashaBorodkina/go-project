@@ -67,7 +67,7 @@ func (h *EventHandler) CreateEvent(c *gin.Context, eventType string, successMess
 	}
 	response := dto.TrackEventResponse{
 		BannerID:  bannerID,
-		CreatedAt: time.Now(),
+		CreatedAt: time.Now().Truncate(time.Second),
 	}
 	Success(c, http.StatusOK, response)
 }
