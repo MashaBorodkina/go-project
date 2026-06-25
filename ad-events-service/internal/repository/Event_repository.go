@@ -1,12 +1,13 @@
 package repository
 
 import (
-	"ad-events-service/internal/model"
 	"context"
 	"fmt"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+
+	"ad-events-service/internal/model"
 )
 
 type EventRepository struct {
@@ -23,6 +24,7 @@ func (r *EventRepository) CreateEvent(ctx context.Context, event *model.Event) e
 	if err != nil {
 		return fmt.Errorf("failed to create event: %w", err)
 	}
+
 	return nil
 }
 
@@ -30,10 +32,18 @@ func (r *EventRepository) CreateEvent(ctx context.Context, event *model.Event) e
 func (r *EventRepository) GetEventByID(ctx context.Context, ID string) (*model.Event, error) {
 	var event model.Event
 	query := "SELECT id, banner_id, type, created_at, ip, user_agent FROM events WHERE id = $1"
-	err := r.db.QueryRow(ctx, query, ID).Scan(&event.ID, &event.Banner_ID, &event.Type, &event.CreatedAt, &event.Ip, &event.User_Agent)
+	err := r.db.QueryRow(ctx, query, ID).Scan(
+		&event.ID,
+		&event.Banner_ID,
+		&event.Type,
+		&event.CreatedAt,
+		&event.Ip,
+		&event.User_Agent,
+	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get event by ID: %w", err)
 	}
+
 	return &event, nil
 }
 
@@ -57,10 +67,16 @@ func (r *EventRepository) GetAllEvents(ctx context.Context) ([]*model.Event, err
 	if err := rows.Err(); err != nil {
 		return nil, fmt.Errorf("error occurred while iterating over events: %w", err)
 	}
+
 	return events, nil
 }
 
-func (r *EventRepository) GetEventsByBannerID(ctx context.Context, bannerID string, eventType string, limit int, offset int) ([]*model.Event, error) {
+func (r *EventRepository) GetEventsByBannerID(
+	ctx context.Context, bannerID string,
+	eventType string,
+	limit int,
+	offset int,
+) ([]*model.Event, error) {
 	query := `SELECT id,
 	banner_id,
 	type,
@@ -97,10 +113,17 @@ func (r *EventRepository) GetEventsByBannerID(ctx context.Context, bannerID stri
 	if err := rows.Err(); err != nil {
 		return nil, fmt.Errorf("error occurred while iterating over events: %w", err)
 	}
+
 	return events, nil
 }
 
-func (r *EventRepository) GetEventsByCampaignID(ctx context.Context, campaignID string, eventType string, limit int, offset int) ([]*model.Event, error) {
+func (r *EventRepository) GetEventsByCampaignID(
+	ctx context.Context,
+	campaignID string,
+	eventType string,
+	limit int,
+	offset int,
+) ([]*model.Event, error) {
 	query := `SELECT e.id,
 	e.banner_id,
 	e.type,

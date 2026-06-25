@@ -1,14 +1,15 @@
 package service
 
 import (
-	"ad-events-service/internal/apperrors"
-	"ad-events-service/internal/dto"
-	"ad-events-service/internal/model"
-	"ad-events-service/internal/repository"
 	"context"
 	"fmt"
 
 	"github.com/google/uuid"
+
+	"ad-events-service/internal/apperrors"
+	"ad-events-service/internal/dto"
+	"ad-events-service/internal/model"
+	"ad-events-service/internal/repository"
 )
 
 type BannerService struct {
@@ -49,6 +50,7 @@ func (s *BannerService) GetAllBannersByCampaignId(ctx context.Context, campaignI
 	if len(bans) == 0 {
 		return nil, apperrors.ErrBannerNotFound
 	}
+
 	return bans, nil
 }
 
@@ -63,6 +65,7 @@ func ValidateBanner(ban *model.Banner) error {
 	case ban.CampaignID == uuid.Nil:
 		return fmt.Errorf("banner campaign ID cannot be empty")
 	}
+
 	return nil
 }
 
@@ -73,6 +76,7 @@ func (s *BannerService) CreateBanner(ctx context.Context, ban *model.Banner) err
 	if err := s.BanRepo.CreateBanner(ctx, ban); err != nil {
 		return fmt.Errorf("failed to create banner: %w", err)
 	}
+
 	return nil
 }
 
@@ -83,10 +87,15 @@ func (s *BannerService) UpdateBanner(ctx context.Context, banner *model.Banner) 
 	if err := s.BanRepo.UpdateBanner(ctx, banner); err != nil {
 		return fmt.Errorf("failed to update banner: %w", err)
 	}
+
 	return nil
 }
 
-func (s *BannerService) PatchBanner(ctx context.Context, banID string, req *dto.BannerPatchRequest) (*model.Banner, error) {
+func (s *BannerService) PatchBanner(
+	ctx context.Context,
+	banID string,
+	req *dto.BannerPatchRequest,
+) (*model.Banner, error) {
 	switch {
 	case banID == "":
 		return nil, fmt.Errorf("banner ID cannot be empty")
@@ -114,6 +123,7 @@ func (s *BannerService) PatchBanner(ctx context.Context, banID string, req *dto.
 	if err := s.BanRepo.UpdateBanner(ctx, banner); err != nil {
 		return nil, fmt.Errorf("failed to update banner: %w", err)
 	}
+
 	return banner, nil
 }
 
@@ -124,5 +134,6 @@ func (s *BannerService) DeleteBanner(ctx context.Context, banID string) error {
 	if err := s.BanRepo.DeleteBanner(ctx, banID); err != nil {
 		return fmt.Errorf("failed to delete banner: %w", err)
 	}
+
 	return nil
 }

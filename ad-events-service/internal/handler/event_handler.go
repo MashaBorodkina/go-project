@@ -1,17 +1,17 @@
 package handler
 
 import (
-	"ad-events-service/internal/apperrors"
-	"ad-events-service/internal/dto"
-	"ad-events-service/internal/service"
 	"errors"
 	"net/http"
-	"time"
-
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+
+	"ad-events-service/internal/apperrors"
+	"ad-events-service/internal/dto"
+	"ad-events-service/internal/service"
 )
 
 type EventHandler struct {
@@ -27,6 +27,7 @@ func (h *EventHandler) CreateEvent(c *gin.Context, eventType string, successMess
 	_, err := uuid.Parse(bannerID)
 	if err != nil {
 		Error(c, http.StatusBadRequest, "Invalid banner ID format")
+
 		return
 	}
 	ip := c.ClientIP()
@@ -37,25 +38,31 @@ func (h *EventHandler) CreateEvent(c *gin.Context, eventType string, successMess
 
 		if errors.Is(err, apperrors.ErrBannerNotFound) {
 			Error(c, http.StatusNotFound, "Banner not found")
+
 			return
 		}
 		if errors.Is(err, apperrors.ErrBannerInactive) {
 			Error(c, http.StatusForbidden, "Banner is inactive")
+
 			return
 		}
 		if errors.Is(err, apperrors.ErrCampaignNotFound) {
 			Error(c, http.StatusNotFound, "Campaign not found")
+
 			return
 		}
 		if errors.Is(err, apperrors.ErrCampaignInactive) {
 			Error(c, http.StatusForbidden, "Campaign is inactive")
+
 			return
 		}
 		if errors.Is(err, apperrors.ErrInvalidEventType) {
 			Error(c, http.StatusBadRequest, "Invalid event type")
+
 			return
 		}
 		Error(c, http.StatusInternalServerError, "Failed to track event")
+
 		return
 	}
 	response := dto.TrackEventResponse{
@@ -78,11 +85,13 @@ func (h *EventHandler) GetEventByID(c *gin.Context) {
 	_, err := uuid.Parse(eventID)
 	if err != nil {
 		Error(c, http.StatusBadRequest, "Invalid banner ID format")
+
 		return
 	}
 	events, err := h.EventService.GetEventByID(c.Request.Context(), eventID)
 	if err != nil {
 		Error(c, http.StatusInternalServerError, "Failed to retrieve events")
+
 		return
 	}
 	Success(c, http.StatusOK, events)
@@ -93,6 +102,7 @@ func (h *EventHandler) GetEventsByBannerID(c *gin.Context) {
 	_, err := uuid.Parse(bannerID)
 	if err != nil {
 		Error(c, http.StatusBadRequest, "Invalid banner ID format")
+
 		return
 	}
 	eventType := c.Query("type")
@@ -102,12 +112,14 @@ func (h *EventHandler) GetEventsByBannerID(c *gin.Context) {
 	limitInt, err := strconv.Atoi(limit)
 	if err != nil {
 		Error(c, http.StatusBadRequest, "Invalid limit value")
+
 		return
 	}
 
 	offsetInt, err := strconv.Atoi(offset)
 	if err != nil {
 		Error(c, http.StatusBadRequest, "Invalid offset value")
+
 		return
 	}
 
@@ -115,9 +127,12 @@ func (h *EventHandler) GetEventsByBannerID(c *gin.Context) {
 	if err != nil {
 		if errors.Is(err, apperrors.ErrInvalidEventType) {
 			Error(c, http.StatusBadRequest, "Invalid event type")
+
 			return
+
 		}
 		Error(c, http.StatusInternalServerError, "Failed to retrieve events")
+
 		return
 	}
 	Success(c, http.StatusOK, events)
@@ -128,6 +143,7 @@ func (h *EventHandler) GetEventsByCampaignID(c *gin.Context) {
 	_, err := uuid.Parse(campaignID)
 	if err != nil {
 		Error(c, http.StatusBadRequest, "Invalid campaign ID format")
+
 		return
 	}
 	eventType := c.Query("type")
@@ -137,12 +153,14 @@ func (h *EventHandler) GetEventsByCampaignID(c *gin.Context) {
 	limitInt, err := strconv.Atoi(limit)
 	if err != nil {
 		Error(c, http.StatusBadRequest, "Invalid limit value")
+
 		return
 	}
 
 	offsetInt, err := strconv.Atoi(offset)
 	if err != nil {
 		Error(c, http.StatusBadRequest, "Invalid offset value")
+
 		return
 	}
 
@@ -150,9 +168,11 @@ func (h *EventHandler) GetEventsByCampaignID(c *gin.Context) {
 	if err != nil {
 		if errors.Is(err, apperrors.ErrInvalidEventType) {
 			Error(c, http.StatusBadRequest, "Invalid event type")
+
 			return
 		}
 		Error(c, http.StatusInternalServerError, "Failed to retrieve events")
+
 		return
 	}
 	Success(c, http.StatusOK, events)

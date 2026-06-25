@@ -1,13 +1,14 @@
 package service
 
 import (
-	"ad-events-service/internal/dto"
-	"ad-events-service/internal/model"
-	"ad-events-service/internal/repository"
 	"context"
 	"fmt"
 
 	"github.com/google/uuid"
+
+	"ad-events-service/internal/dto"
+	"ad-events-service/internal/model"
+	"ad-events-service/internal/repository"
 )
 
 type CampaignService struct {
@@ -96,12 +97,15 @@ func ValidateCampaignUpdate(camp *model.Campaign) error {
 	if !isValidStatus(camp.Status) {
 		return fmt.Errorf("invalid campaign status: %s", camp.Status)
 	}
+
 	return nil
 }
 
 func isValidStatus(status string) bool {
 	switch status {
-	case "active", "paused", "archived":
+	case model.CampaignStatusActive,
+		model.CampaignStatusPaused,
+		model.CampaignStatusArchived:
 		return true
 	default:
 		return false
@@ -139,7 +143,11 @@ func (s *CampaignService) DeleteCampaign(ctx context.Context, campID string) err
 }
 
 // PatchCampaign allows partial updates to a campaign. Only non-nil fields in the request will be updated.
-func (s *CampaignService) PatchCampaign(ctx context.Context, campID string, req *dto.PatchCampaignRequest) (*model.Campaign, error) {
+func (s *CampaignService) PatchCampaign(
+	ctx context.Context,
+	campID string,
+	req *dto.PatchCampaignRequest,
+) (*model.Campaign, error) {
 	switch {
 	case campID == "":
 		return nil, fmt.Errorf("campaign ID cannot be empty")

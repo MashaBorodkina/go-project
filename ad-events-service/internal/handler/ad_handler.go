@@ -1,12 +1,13 @@
 package handler
 
 import (
-	"ad-events-service/internal/apperrors"
-	"ad-events-service/internal/service"
 	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+
+	"ad-events-service/internal/apperrors"
+	"ad-events-service/internal/service"
 )
 
 type AdHandler struct {
@@ -22,13 +23,16 @@ func (h *AdHandler) GetBannerForDisplay(c *gin.Context) {
 	if err != nil {
 		if errors.Is(err, apperrors.ErrNoActiveCampaignAvailable) {
 			Error(c, http.StatusNotFound, "No active campaigns available")
+
 			return
 		}
 		if errors.Is(err, apperrors.ErrNoBannersAvailable) {
 			Error(c, http.StatusNotFound, "No banners available for display")
+
 			return
 		}
 		Error(c, http.StatusInternalServerError, "Failed to get banner for display")
+
 		return
 	}
 	Success(c, http.StatusOK, banner)

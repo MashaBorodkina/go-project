@@ -1,11 +1,12 @@
 package service
 
 import (
+	"context"
+	"fmt"
+
 	"ad-events-service/internal/apperrors"
 	"ad-events-service/internal/model"
 	"ad-events-service/internal/repository"
-	"context"
-	"fmt"
 )
 
 type EventService struct {
@@ -14,7 +15,11 @@ type EventService struct {
 	CampRepo  *repository.Repository
 }
 
-func NewEventService(eventRepo *repository.EventRepository, campRepo *repository.Repository, banRepo *repository.BannerRepository) *EventService {
+func NewEventService(
+	eventRepo *repository.EventRepository,
+	campRepo *repository.Repository,
+	banRepo *repository.BannerRepository,
+) *EventService {
 	return &EventService{
 		EventRepo: eventRepo,
 		CampRepo:  campRepo,
@@ -22,12 +27,17 @@ func NewEventService(eventRepo *repository.EventRepository, campRepo *repository
 	}
 }
 
-func (s *EventService) TrackEvent(ctx context.Context, ban_id string, eventType string, ip string, userAgent string) error {
+func (s *EventService) TrackEvent(
+	ctx context.Context,
+	ban_id string,
+	eventType string,
+	ip string,
+	userAgent string,
+) error {
 	if ban_id == "" {
 		return fmt.Errorf("banner ID cannot be empty")
 	}
 	ban, err := s.BanRepo.GetBannerByID(ctx, ban_id)
-
 	if err != nil {
 		return fmt.Errorf("failed to get banner by ID: %w", err)
 	}
@@ -40,7 +50,6 @@ func (s *EventService) TrackEvent(ctx context.Context, ban_id string, eventType 
 	}
 
 	camp, err := s.CampRepo.GetCampaignByID(ctx, ban.CampaignID.String())
-
 	if err != nil {
 		return fmt.Errorf("failed to get campaign by banner ID: %w", err)
 	}
@@ -49,11 +58,11 @@ func (s *EventService) TrackEvent(ctx context.Context, ban_id string, eventType 
 		return apperrors.ErrCampaignNotFound
 	}
 
-	if camp.Status != "active" {
+	if camp.Status != model.CampaignStatusActive {
 		return apperrors.ErrCampaignInactive
 	}
 
-	if eventType != "impression" && eventType != "click" {
+	if eventType != model.EventTypeImpression && eventType != model.EventTypeClick {
 		return apperrors.ErrInvalidEventType
 	}
 
@@ -70,15 +79,14 @@ func (s *EventService) TrackEvent(ctx context.Context, ban_id string, eventType 
 }
 
 func (s *EventService) TrackImpression(ctx context.Context, ban_id string, ip string, userAgent string) error {
-	return s.TrackEvent(ctx, ban_id, "impression", ip, userAgent)
+	return s.TrackEvent(ctx, ban_id, model.EventTypeImpression, ip, userAgent)
 }
 
 func (s *EventService) TrackClick(ctx context.Context, ban_id string, ip string, userAgent string) error {
-	return s.TrackEvent(ctx, ban_id, "click", ip, userAgent)
+	return s.TrackEvent(ctx, ban_id, model.EventTypeClick, ip, userAgent)
 }
 
 func (s *EventService) GetEventByID(ctx context.Context, ID string) (*model.Event, error) {
-
 	if ID == "" {
 		return nil, fmt.Errorf("event ID cannot be empty")
 	}
@@ -89,6 +97,7 @@ func (s *EventService) GetEventByID(ctx context.Context, ID string) (*model.Even
 	if event == nil {
 		return nil, apperrors.ErrEventNotFound
 	}
+
 	return event, nil
 }
 
@@ -100,7 +109,13 @@ func (s *EventService) GetAllEvents(ctx context.Context) ([]*model.Event, error)
 	return events, nil
 }
 
-func (s *EventService) GetEventsByBannerID(ctx context.Context, bannerID string, eventType string, limit int, offset int) ([]*model.Event, error) {
+func (s *EventService) GetEventsByBannerID(
+	ctx context.Context,
+	bannerID string,
+	eventType string,
+	limit int,
+	offset int,
+) ([]*model.Event, error) {
 	if bannerID == "" {
 		return nil, fmt.Errorf("banner ID cannot be empty")
 	}
@@ -110,7 +125,7 @@ func (s *EventService) GetEventsByBannerID(ctx context.Context, bannerID string,
 	if offset < 0 {
 		offset = 0
 	}
-	if eventType != "" && eventType != "impression" && eventType != "click" {
+	if eventType != "" && eventType != model.EventTypeImpression && eventType != model.EventTypeClick {
 		return nil, apperrors.ErrInvalidEventType
 	}
 	events, err := s.EventRepo.GetEventsByBannerID(ctx, bannerID, eventType, limit, offset)
@@ -120,7 +135,13 @@ func (s *EventService) GetEventsByBannerID(ctx context.Context, bannerID string,
 	return events, nil
 }
 
-func (s *EventService) GetEventsByCampaignID(ctx context.Context, campaignID string, eventType string, limit int, offset int) ([]*model.Event, error) {
+func (s *EventService) GetEventsByCampaignID(
+	ctx context.Context,
+	campaignID string,
+	eventType string,
+	limit int,
+	offset int,
+) ([]*model.Event, error) {
 	if campaignID == "" {
 		return nil, fmt.Errorf("campaign ID cannot be empty")
 	}
@@ -130,7 +151,7 @@ func (s *EventService) GetEventsByCampaignID(ctx context.Context, campaignID str
 	if offset < 0 {
 		offset = 0
 	}
-	if eventType != "" && eventType != "impression" && eventType != "click" {
+	if eventType != "" && eventType != model.EventTypeImpression && eventType != model.EventTypeClick {
 		return nil, apperrors.ErrInvalidEventType
 	}
 	events, err := s.EventRepo.GetEventsByCampaignID(ctx, campaignID, eventType, limit, offset)

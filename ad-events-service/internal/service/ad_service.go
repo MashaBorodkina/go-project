@@ -1,11 +1,12 @@
 package service
 
 import (
+	"context"
+	"fmt"
+
 	"ad-events-service/internal/apperrors"
 	"ad-events-service/internal/model"
 	"ad-events-service/internal/repository"
-	"context"
-	"fmt"
 )
 
 type AdService struct {
@@ -29,8 +30,9 @@ func (s *AdService) GetBannerForDisplay(ctx context.Context) (*model.Banner, err
 	campIdFound := ""
 
 	for _, camp := range camps {
-		if camp.Budget > 0 && camp.Status == "active" {
+		if camp.Budget > 0 && camp.Status == model.CampaignStatusActive {
 			campIdFound = camp.ID.String()
+
 			break
 		}
 	}
@@ -40,7 +42,6 @@ func (s *AdService) GetBannerForDisplay(ctx context.Context) (*model.Banner, err
 	}
 
 	bans, err := s.BanRepo.GetBannersByCampaignId(ctx, campIdFound)
-
 	if err != nil {
 		return nil, fmt.Errorf("failed to get banners by campaign ID: %w", err)
 	}
@@ -50,5 +51,6 @@ func (s *AdService) GetBannerForDisplay(ctx context.Context) (*model.Banner, err
 			return ban, nil
 		}
 	}
+
 	return nil, apperrors.ErrNoBannersAvailable
 }

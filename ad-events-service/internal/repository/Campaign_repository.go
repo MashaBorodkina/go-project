@@ -1,12 +1,13 @@
 package repository
 
 import (
-	"ad-events-service/internal/apperrors"
-	"ad-events-service/internal/model"
 	"context"
 	"fmt"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+
+	"ad-events-service/internal/apperrors"
+	"ad-events-service/internal/model"
 )
 
 type Repository struct {
@@ -20,10 +21,18 @@ func NewRepository(db *pgxpool.Pool) *Repository {
 func (r *Repository) GetCampaignByID(ctx context.Context, id string) (*model.Campaign, error) {
 	var campaign model.Campaign
 	query := "SELECT id, name, budget, status, created_at, updated_at FROM campaigns WHERE id = $1"
-	err := r.db.QueryRow(ctx, query, id).Scan(&campaign.ID, &campaign.Name, &campaign.Budget, &campaign.Status, &campaign.CreatedAt, &campaign.UpdatedAt)
+	err := r.db.QueryRow(ctx, query, id).Scan(
+		&campaign.ID,
+		&campaign.Name,
+		&campaign.Budget,
+		&campaign.Status,
+		&campaign.CreatedAt,
+		&campaign.UpdatedAt,
+	)
 	if err != nil {
 		return nil, apperrors.ErrCampaignNotFound
 	}
+
 	return &campaign, nil
 }
 
@@ -32,10 +41,19 @@ func (r *Repository) GetCampaignByName(ctx context.Context, name string) (*model
 	query := `SELECT id, name, budget, status, created_at, updated_at 
 	FROM campaigns 
 	WHERE name = $1`
-	err := r.db.QueryRow(ctx, query, name).Scan(&campaign.ID, &campaign.Name, &campaign.Budget, &campaign.Status, &campaign.CreatedAt, &campaign.UpdatedAt)
+	err := r.db.QueryRow(ctx, query, name).
+		Scan(
+			&campaign.ID,
+			&campaign.Name,
+			&campaign.Budget,
+			&campaign.Status,
+			&campaign.CreatedAt,
+			&campaign.UpdatedAt,
+		)
 	if err != nil {
 		return nil, apperrors.ErrCampaignNotFound
 	}
+
 	return &campaign, nil
 }
 
@@ -50,7 +68,14 @@ func (r *Repository) GetAllCampaigns(ctx context.Context) ([]*model.Campaign, er
 	var campaigns []*model.Campaign
 	for rows.Next() {
 		var campaign model.Campaign
-		err := rows.Scan(&campaign.ID, &campaign.Name, &campaign.Budget, &campaign.Status, &campaign.CreatedAt, &campaign.UpdatedAt)
+		err := rows.Scan(
+			&campaign.ID,
+			&campaign.Name,
+			&campaign.Budget,
+			&campaign.Status,
+			&campaign.CreatedAt,
+			&campaign.UpdatedAt,
+		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan campaign: %w", err)
 		}
@@ -64,10 +89,18 @@ func (r *Repository) CreateCampaign(ctx context.Context, campaign *model.Campaig
 	query := `INSERT INTO campaigns (name, budget) 
 	VALUES ($1, $2) 
 	RETURNING id, name, budget, status, created_at`
-	err := r.db.QueryRow(ctx, query, campaign.Name, campaign.Budget).Scan(&campaign.ID, &campaign.Name, &campaign.Budget, &campaign.Status, &campaign.CreatedAt)
+	err := r.db.QueryRow(ctx, query, campaign.Name, campaign.Budget).
+		Scan(
+			&campaign.ID,
+			&campaign.Name,
+			&campaign.Budget,
+			&campaign.Status,
+			&campaign.CreatedAt,
+		)
 	if err != nil {
 		return fmt.Errorf("failed to create campaign: %w", err)
 	}
+
 	return nil
 }
 
@@ -77,6 +110,7 @@ func (r *Repository) UpdateCampaign(ctx context.Context, campaign *model.Campaig
 	if err != nil {
 		return fmt.Errorf("failed to update campaign: %w", err)
 	}
+
 	return nil
 }
 
@@ -86,5 +120,6 @@ func (r *Repository) DeleteCampaign(ctx context.Context, id string) error {
 	if err != nil {
 		return fmt.Errorf("failed to delete campaign: %w", err)
 	}
+
 	return nil
 }

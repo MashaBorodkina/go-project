@@ -1,14 +1,14 @@
 package repository
 
 import (
-	"ad-events-service/internal/model"
 	"context"
 	"fmt"
 	"time"
 
 	"github.com/google/uuid"
-
 	"github.com/jackc/pgx/v5/pgxpool"
+
+	"ad-events-service/internal/model"
 )
 
 type StatsRepository struct {
@@ -19,7 +19,12 @@ func NewStatsRepository(db *pgxpool.Pool) *StatsRepository {
 	return &StatsRepository{db: db}
 }
 
-func (r *StatsRepository) GetBannerStatsByID(ctx context.Context, bannerID string, from time.Time, to time.Time) (*model.BannerStats, error) {
+func (r *StatsRepository) GetBannerStatsByID(
+	ctx context.Context,
+	bannerID string,
+	from time.Time,
+	to time.Time,
+) (*model.BannerStats, error) {
 	var stats model.BannerStats
 	query := `SELECT type, COUNT(*) as count 
 	FROM events 
@@ -57,9 +62,9 @@ func (r *StatsRepository) GetBannerStatsByID(ctx context.Context, bannerID strin
 			return nil, fmt.Errorf("failed to scan banner stats: %w", err)
 		}
 		switch eventType {
-		case "impression":
+		case model.EventTypeImpression:
 			stats.Impressions = count
-		case "click":
+		case model.EventTypeClick:
 			stats.Clicks = count
 		}
 	}
@@ -70,10 +75,16 @@ func (r *StatsRepository) GetBannerStatsByID(ctx context.Context, bannerID strin
 		stats.Impressions = 0
 		stats.Clicks = 0
 	}
+
 	return &stats, nil
 }
 
-func (r *StatsRepository) GetCampaignStatsByID(ctx context.Context, campaignID string, from time.Time, to time.Time) (*model.CampaignStats, error) {
+func (r *StatsRepository) GetCampaignStatsByID(
+	ctx context.Context,
+	campaignID string,
+	from time.Time,
+	to time.Time,
+) (*model.CampaignStats, error) {
 	var stats model.CampaignStats
 	query := `SELECT c.name, e.type, COUNT(*) as count, c.budget 
 	FROM events e 
@@ -111,10 +122,10 @@ func (r *StatsRepository) GetCampaignStatsByID(ctx context.Context, campaignID s
 			return nil, fmt.Errorf("failed to scan campaign stats: %w", err)
 		}
 		switch eventType {
-		case "impression":
+		case model.EventTypeImpression:
 			stats.Impressions = count
 
-		case "click":
+		case model.EventTypeClick:
 			stats.Clicks = count
 		}
 	}
@@ -127,10 +138,16 @@ func (r *StatsRepository) GetCampaignStatsByID(ctx context.Context, campaignID s
 		stats.Impressions = 0
 		stats.Clicks = 0
 	}
+
 	return &stats, nil
 }
 
-func (r *StatsRepository) GetDailyStats(ctx context.Context, campaignID string, from time.Time, to time.Time) ([]*model.DailyStats, error) {
+func (r *StatsRepository) GetDailyStats(
+	ctx context.Context,
+	campaignID string,
+	from time.Time,
+	to time.Time,
+) ([]*model.DailyStats, error) {
 	query := `Select Date(e.created_at) as date, e.type, Count(*) as count
 	 From events e
 	 Join banners b On e.banner_id = b.id
@@ -167,9 +184,9 @@ func (r *StatsRepository) GetDailyStats(ctx context.Context, campaignID string, 
 			statsMap[dateKey] = &model.DailyStats{Date: date}
 		}
 		switch eventType {
-		case "impression":
+		case model.EventTypeImpression:
 			statsMap[dateKey].Impressions = count
-		case "click":
+		case model.EventTypeClick:
 			statsMap[dateKey].Clicks = count
 		}
 
@@ -182,5 +199,6 @@ func (r *StatsRepository) GetDailyStats(ctx context.Context, campaignID string, 
 	for _, stat := range statsMap {
 		stats = append(stats, stat)
 	}
+
 	return stats, nil
 }

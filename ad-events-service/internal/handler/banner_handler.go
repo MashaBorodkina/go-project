@@ -1,26 +1,28 @@
 package handler
 
 import (
-	"ad-events-service/internal/apperrors"
-	"ad-events-service/internal/dto"
-	"ad-events-service/internal/model"
-	"ad-events-service/internal/service"
 	"errors"
-	"fmt"
 	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
+	"go.uber.org/zap"
+
+	"ad-events-service/internal/apperrors"
+	"ad-events-service/internal/dto"
+	"ad-events-service/internal/model"
+	"ad-events-service/internal/service"
 )
 
 type BannerHandler struct {
 	BanService *service.BannerService
+	logger     *zap.Logger
 }
 
-func NewBannerHandler(banService *service.BannerService) *BannerHandler {
-	return &BannerHandler{BanService: banService}
+func NewBannerHandler(banService *service.BannerService, logger *zap.Logger) *BannerHandler {
+	return &BannerHandler{BanService: banService, logger: logger}
 }
 
 func validationMessage(err error) string {
@@ -55,6 +57,7 @@ func (h *BannerHandler) GetBannerByID(c *gin.Context) {
 	_, err := uuid.Parse(banID)
 	if err != nil {
 		Error(c, http.StatusBadRequest, "Invalid banner ID format")
+
 		return
 	}
 
@@ -62,10 +65,12 @@ func (h *BannerHandler) GetBannerByID(c *gin.Context) {
 	if err != nil {
 		if errors.Is(err, apperrors.ErrBannerNotFound) {
 			Error(c, http.StatusNotFound, "Banner not found")
+
 			return
 		}
-		fmt.Printf("Get banner by ID error: %v\n", err)
+		h.logger.Error("Get banner by ID error", zap.Error(err))
 		Error(c, http.StatusInternalServerError, "Failed to retrieve banner")
+
 		return
 	}
 
@@ -77,6 +82,7 @@ func (h *BannerHandler) GetAllBannersByCampaignId(c *gin.Context) {
 	_, err := uuid.Parse(campaignId)
 	if err != nil {
 		Error(c, http.StatusBadRequest, "Invalid campaign ID format")
+
 		return
 	}
 
@@ -84,18 +90,22 @@ func (h *BannerHandler) GetAllBannersByCampaignId(c *gin.Context) {
 	if err != nil {
 		if errors.Is(err, apperrors.ErrCampaignNotFound) {
 			Error(c, http.StatusNotFound, "Campaign not found")
+
 			return
 		}
 		if errors.Is(err, apperrors.ErrBannerNotFound) {
 			Error(c, http.StatusNotFound, "Banner not found")
+
 			return
 		}
 		if errors.Is(err, apperrors.ErrInvalidCampaignID) {
 			Error(c, http.StatusBadRequest, "Invalid campaign ID format ")
+
 			return
 		}
-		fmt.Printf("Get all banners error: %v\n", err)
+		h.logger.Error("Get all banners error", zap.Error(err))
 		Error(c, http.StatusInternalServerError, "Failed to retrieve banner")
+
 		return
 	}
 	Success(c, http.StatusOK, bans)
@@ -106,6 +116,7 @@ func (h *BannerHandler) CreateBanner(c *gin.Context) {
 	parsId, err := uuid.Parse(campaignID)
 	if err != nil {
 		Error(c, http.StatusBadRequest, "Invalid campaign ID format")
+
 		return
 	}
 	var req struct {
@@ -115,10 +126,12 @@ func (h *BannerHandler) CreateBanner(c *gin.Context) {
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		Error(c, http.StatusBadRequest, validationMessage(err))
+
 		return
 	}
 	if req.Title == "" || req.ImageUrl == "" {
 		Error(c, http.StatusBadRequest, "Title and Image URL are required")
+
 		return
 	}
 
@@ -130,8 +143,9 @@ func (h *BannerHandler) CreateBanner(c *gin.Context) {
 	}
 	err = h.BanService.CreateBanner(c.Request.Context(), banner)
 	if err != nil {
-		fmt.Printf("Create banner error: %v\n", err)
+		h.logger.Error("Create banner error", zap.Error(err))
 		Error(c, http.StatusInternalServerError, "Failed to create banner")
+
 		return
 	}
 	response := dto.BannerResponseCreate{
@@ -151,6 +165,7 @@ func (h *BannerHandler) UpdateBanner(c *gin.Context) {
 	_, err := uuid.Parse(banID)
 	if err != nil {
 		Error(c, http.StatusBadRequest, "Invalid banner ID format")
+
 		return
 	}
 	var req struct {
@@ -161,12 +176,14 @@ func (h *BannerHandler) UpdateBanner(c *gin.Context) {
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		Error(c, http.StatusBadRequest, "Invalid request body")
+
 		return
 	}
 
 	parsId, err := uuid.Parse(req.CampaignID)
 	if err != nil {
 		Error(c, http.StatusBadRequest, "Invalid campaign ID format")
+
 		return
 	}
 
@@ -181,9 +198,11 @@ func (h *BannerHandler) UpdateBanner(c *gin.Context) {
 	if err != nil {
 		if errors.Is(err, apperrors.ErrBannerNotFound) {
 			Error(c, http.StatusNotFound, "Banner not found")
+
 			return
 		}
 		Error(c, http.StatusInternalServerError, "Failed to update banner")
+
 		return
 	}
 	Success(c, http.StatusOK, banner)
@@ -194,15 +213,18 @@ func (h *BannerHandler) DeleteBanner(c *gin.Context) {
 	_, err := uuid.Parse(banID)
 	if err != nil {
 		Error(c, http.StatusBadRequest, "Invalid banner ID format")
+
 		return
 	}
 	err = h.BanService.DeleteBanner(c.Request.Context(), banID)
 	if err != nil {
 		if errors.Is(err, apperrors.ErrBannerNotFound) {
 			Error(c, http.StatusNotFound, "Banner not found")
+
 			return
 		}
 		Error(c, http.StatusInternalServerError, "Failed to delete banner")
+
 		return
 	}
 	c.Status(http.StatusNoContent)
@@ -213,20 +235,24 @@ func (h *BannerHandler) PatchBanner(c *gin.Context) {
 	_, err := uuid.Parse(banID)
 	if err != nil {
 		Error(c, http.StatusBadRequest, "Invalid banner ID format")
+
 		return
 	}
 	var req dto.BannerPatchRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		Error(c, http.StatusBadRequest, "Invalid request body")
+
 		return
 	}
 	updatedBan, err := h.BanService.PatchBanner(c.Request.Context(), banID, &req)
 	if err != nil {
 		if errors.Is(err, apperrors.ErrBannerNotFound) {
 			Error(c, http.StatusNotFound, "Banner not found")
+
 			return
 		}
 		Error(c, http.StatusInternalServerError, "Failed to update banner")
+
 		return
 	}
 	Success(c, http.StatusOK, updatedBan)
