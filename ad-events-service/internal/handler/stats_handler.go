@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 
 	"ad-events-service/internal/apperrors"
+	"ad-events-service/internal/dto"
 	"ad-events-service/internal/service"
 )
 
@@ -150,9 +151,28 @@ func (h *StatsHandler) GetDailyStats(c *gin.Context) {
 
 			return
 		}
+
 		Error(c, http.StatusInternalServerError, "Failed to retrieve daily stats")
 
 		return
 	}
-	Success(c, http.StatusOK, dailyStats)
+	response := dto.DailyStatsResponse{
+		CampaignID: campaignID,
+		Period: dto.PeriodeResponse{
+			From: from.Format("2006-01-02"),
+			To:   to.Format("2026-06-01"),
+		},
+		Daily: make([]dto.DailyStarsItemResponse, 0, len(dailyStats)),
+	}
+
+	for _, stat := range dailyStats {
+		response.Daily = append(response.Daily, dto.DailyStarsItemResponse{
+			Date:        stat.Date.Format("2026-06-01"),
+			Impressions: stat.Impressions,
+			Clicks:      stat.Clicks,
+			CTR:         stat.CTR,
+		})
+	}
+
+	Success(c, http.StatusOK, response)
 }
