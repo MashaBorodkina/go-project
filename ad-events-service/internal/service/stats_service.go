@@ -42,9 +42,9 @@ func (s *StatsService) GetBannerStatsByID(
 		return nil, apperrors.ErrInvalidDateRange
 	}
 
-	if from.IsZero() != to.IsZero() {
-		return nil, apperrors.ErrBothDatesRequired
-	}
+	/*if from.IsZero() != to.IsZero() {
+		return nil, apperrors.ErrBothDatesRequired //moved the check to stats_handler
+	}*/
 
 	stats, err := s.StatsRepo.GetBannerStatsByID(ctx, bannerID, from, to)
 	if err != nil {
@@ -72,9 +72,9 @@ func (s *StatsService) GetCampaignStatsByID(
 	if !from.IsZero() && !to.IsZero() && from.After(to) {
 		return nil, apperrors.ErrInvalidDateRange
 	}
-	if from.IsZero() != to.IsZero() {
-		return nil, apperrors.ErrBothDatesRequired
-	}
+	/*if from.IsZero() != to.IsZero() {
+		return nil, apperrors.ErrBothDatesRequired //moved the check to stats_handler
+	}*/
 
 	_, err := s.CampRepo.GetCampaignByID(ctx, campaignID)
 	if err != nil {
@@ -104,9 +104,9 @@ func (s *StatsService) GetDailyStats(
 	if !from.IsZero() && !to.IsZero() && from.After(to) {
 		return nil, apperrors.ErrInvalidDateRange
 	}
-	if from.IsZero() != to.IsZero() {
-		return nil, apperrors.ErrBothDatesRequired
-	}
+	/*if from.IsZero() != to.IsZero() {
+		return nil, apperrors.ErrBothDatesRequired //moved the check to stats_handler
+	}*/
 
 	_, err := s.CampRepo.GetCampaignByID(ctx, campaignID)
 	if err != nil {
