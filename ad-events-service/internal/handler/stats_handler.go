@@ -33,6 +33,7 @@ func (h *StatsHandler) GetBannerStatsByID(c *gin.Context) {
 
 	if query.From.IsZero() != query.To.IsZero() {
 		Error(c, http.StatusBadRequest, apperrors.ErrBothDatesRequired.Error())
+		return
 	}
 
 	/*from, err := time.Parse("2006-01-02", fromStr)
@@ -86,6 +87,7 @@ func (h *StatsHandler) GetCampaignStatsByID(c *gin.Context) {
 
 	if query.From.IsZero() != query.To.IsZero() {
 		Error(c, http.StatusBadRequest, apperrors.ErrBothDatesRequired.Error())
+		return
 	}
 
 	/*var from, to time.Time
@@ -143,6 +145,7 @@ func (h *StatsHandler) GetDailyStats(c *gin.Context) {
 
 	if query.From.IsZero() != query.To.IsZero() {
 		Error(c, http.StatusBadRequest, apperrors.ErrBothDatesRequired.Error())
+		return
 	}
 
 	/*var from, to time.Time
