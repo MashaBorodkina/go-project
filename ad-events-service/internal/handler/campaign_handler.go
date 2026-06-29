@@ -3,6 +3,7 @@ package handler
 import (
 	"errors"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -102,7 +103,7 @@ func (h *CampaignHandler) CreateCampaign(c *gin.Context) {
 		Name:      camp.Name,
 		Budget:    camp.Budget,
 		Status:    camp.Status,
-		CreatedAt: camp.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
+		CreatedAt: camp.CreatedAt.Format(time.RFC3339),
 	}
 	Success(c, http.StatusCreated, response)
 }
