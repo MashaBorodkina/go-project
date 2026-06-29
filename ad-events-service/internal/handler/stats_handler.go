@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 
 	"ad-events-service/internal/apperrors"
 	"ad-events-service/internal/dto"
@@ -23,10 +22,16 @@ func NewStatsHandler(statsService *service.StatsService) *StatsHandler {
 
 func (h *StatsHandler) GetBannerStatsByID(c *gin.Context) {
 	bannerID := c.Param("id")
-	fromStr := c.Query("from")
-	toStr := c.Query("to")
+	//fromStr := c.Query("from")
+	//toStr := c.Query("to")
 
-	from, err := time.Parse("2006-01-02", fromStr)
+	var query dto.StatsQueryRequest
+	if err := c.ShouldBindQuery(&query); err != nil {
+		Error(c, http.StatusBadRequest, "Invalid query parameters")
+		return
+	}
+
+	/*from, err := time.Parse("2006-01-02", fromStr)
 	if err != nil && fromStr != "" {
 		Error(c, http.StatusBadRequest, "Invalid 'from' date format. Use YYYY-MM-DD format.")
 
@@ -44,8 +49,8 @@ func (h *StatsHandler) GetBannerStatsByID(c *gin.Context) {
 		Error(c, http.StatusBadRequest, "Invalid banner ID format")
 
 		return
-	}
-	bannerStats, err := h.StatsService.GetBannerStatsByID(c.Request.Context(), bannerID, from, to)
+	}*/
+	bannerStats, err := h.StatsService.GetBannerStatsByID(c.Request.Context(), bannerID, query.From, query.To)
 	if err != nil {
 		if errors.Is(err, apperrors.ErrInvalidDateRange) || errors.Is(err, apperrors.ErrBothDatesRequired) {
 			Error(c, http.StatusBadRequest, err.Error())
@@ -66,10 +71,16 @@ func (h *StatsHandler) GetBannerStatsByID(c *gin.Context) {
 
 func (h *StatsHandler) GetCampaignStatsByID(c *gin.Context) {
 	campaignID := c.Param("id")
-	fromStr := c.Query("from")
-	toStr := c.Query("to")
+	//fromStr := c.Query("from")
+	//toStr := c.Query("to")
 
-	var from, to time.Time
+	var query dto.StatsQueryRequest
+	if err := c.ShouldBindQuery(&query); err != nil {
+		Error(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	/*var from, to time.Time
 	var err error
 
 	if fromStr != "" {
@@ -91,8 +102,8 @@ func (h *StatsHandler) GetCampaignStatsByID(c *gin.Context) {
 		Error(c, http.StatusBadRequest, "Invalid campaign ID format")
 
 		return
-	}
-	campaignStats, err := h.StatsService.GetCampaignStatsByID(c.Request.Context(), campaignID, from, to)
+	}*/
+	campaignStats, err := h.StatsService.GetCampaignStatsByID(c.Request.Context(), campaignID, query.From, query.To)
 	if err != nil {
 		if errors.Is(err, apperrors.ErrInvalidDateRange) || errors.Is(err, apperrors.ErrBothDatesRequired) {
 			Error(c, http.StatusBadRequest, err.Error())
@@ -113,10 +124,16 @@ func (h *StatsHandler) GetCampaignStatsByID(c *gin.Context) {
 
 func (h *StatsHandler) GetDailyStats(c *gin.Context) {
 	campaignID := c.Param("id")
-	fromStr := c.Query("from")
-	toStr := c.Query("to")
+	//fromStr := c.Query("from")
+	//toStr := c.Query("to")
 
-	var from, to time.Time
+	var query dto.StatsQueryRequest
+	if err := c.ShouldBindQuery(&query); err != nil {
+		Error(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	/*var from, to time.Time
 	var err error
 
 	if fromStr != "" {
@@ -138,8 +155,8 @@ func (h *StatsHandler) GetDailyStats(c *gin.Context) {
 		Error(c, http.StatusBadRequest, "Invalid campaign ID format")
 
 		return
-	}
-	dailyStats, err := h.StatsService.GetDailyStats(c.Request.Context(), campaignID, from, to)
+	}*/
+	dailyStats, err := h.StatsService.GetDailyStats(c.Request.Context(), campaignID, query.From, query.To)
 	if err != nil {
 		if errors.Is(err, apperrors.ErrInvalidDateRange) || errors.Is(err, apperrors.ErrBothDatesRequired) {
 			Error(c, http.StatusBadRequest, err.Error())
@@ -159,15 +176,15 @@ func (h *StatsHandler) GetDailyStats(c *gin.Context) {
 	response := dto.DailyStatsResponse{
 		CampaignID: campaignID,
 		Period: dto.PeriodeResponse{
-			From: from.Format("2006-01-02"),
-			To:   to.Format("2026-06-01"),
+			From: query.From.Format(time.DateOnly),
+			To:   query.To.Format(time.DateOnly),
 		},
 		Daily: make([]dto.DailyStarsItemResponse, 0, len(dailyStats)),
 	}
 
 	for _, stat := range dailyStats {
 		response.Daily = append(response.Daily, dto.DailyStarsItemResponse{
-			Date:        stat.Date.Format("2026-06-01"),
+			Date:        stat.Date.Format(time.DateOnly),
 			Impressions: stat.Impressions,
 			Clicks:      stat.Clicks,
 			CTR:         stat.CTR,
