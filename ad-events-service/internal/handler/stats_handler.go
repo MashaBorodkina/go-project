@@ -31,6 +31,10 @@ func (h *StatsHandler) GetBannerStatsByID(c *gin.Context) {
 		return
 	}
 
+	if query.From.IsZero() != query.To.IsZero() {
+		Error(c, http.StatusBadRequest, apperrors.ErrBothDatesRequired.Error())
+	}
+
 	/*from, err := time.Parse("2006-01-02", fromStr)
 	if err != nil && fromStr != "" {
 		Error(c, http.StatusBadRequest, "Invalid 'from' date format. Use YYYY-MM-DD format.")
@@ -78,6 +82,10 @@ func (h *StatsHandler) GetCampaignStatsByID(c *gin.Context) {
 	if err := c.ShouldBindQuery(&query); err != nil {
 		Error(c, http.StatusBadRequest, err.Error())
 		return
+	}
+
+	if query.From.IsZero() != query.To.IsZero() {
+		Error(c, http.StatusBadRequest, apperrors.ErrBothDatesRequired.Error())
 	}
 
 	/*var from, to time.Time
@@ -131,6 +139,10 @@ func (h *StatsHandler) GetDailyStats(c *gin.Context) {
 	if err := c.ShouldBindQuery(&query); err != nil {
 		Error(c, http.StatusBadRequest, err.Error())
 		return
+	}
+
+	if query.From.IsZero() != query.To.IsZero() {
+		Error(c, http.StatusBadRequest, apperrors.ErrBothDatesRequired.Error())
 	}
 
 	/*var from, to time.Time
